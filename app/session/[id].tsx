@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Pressable, Alert, View as RNView } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { Text, View } from '@/components/Themed';
@@ -9,6 +9,7 @@ import {
   getSessionCurriculumItemId,
   getCurriculumItems,
   deleteSession,
+  deleteSegment,
 } from '@/db/queries';
 import { useSessionStore } from '@/stores/sessionStore';
 import { SessionDetail } from '@/components/history/SessionDetail';
@@ -26,7 +27,7 @@ export default function SessionDetailScreen() {
   const [curriculumName, setCurriculumName] = useState('Practice');
   const [startedAt, setStartedAt] = useState('');
 
-  useEffect(() => {
+  const loadData = useCallback(() => {
     if (!id) return;
 
     const segs = getSessionSegments(id);
@@ -44,6 +45,15 @@ export default function SessionDetailScreen() {
       if (item) setCurriculumName(item.name);
     }
   }, [id]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const handleDeleteSegment = useCallback((segmentId: string) => {
+    deleteSegment(segmentId);
+    loadData();
+  }, [loadData]);
 
   const handleContinue = () => {
     if (!id) return;
@@ -89,6 +99,7 @@ export default function SessionDetailScreen() {
         curriculumItemName={curriculumName}
         segments={segments}
         attempts={attempts}
+        onDeleteSegment={handleDeleteSegment}
       />
       <RNView style={styles.actionBar}>
         {canContinue && (

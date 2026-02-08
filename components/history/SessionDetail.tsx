@@ -1,6 +1,8 @@
-import React from 'react';
-import { StyleSheet, ScrollView, View as RNView } from 'react-native';
+import React, { useRef } from 'react';
+import { StyleSheet, ScrollView, View as RNView, Pressable, Alert } from 'react-native';
 import { Text } from '@/components/Themed';
+import { Swipeable } from 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import dayjs from 'dayjs';
 import { OSTINATOS, type Ostinato } from '@/constants/curriculum';
 import type { AttemptRow, SessionSegmentRow } from '@/types';
@@ -12,6 +14,7 @@ interface SessionDetailProps {
   curriculumItemName: string;
   segments: SessionSegmentRow[];
   attempts: AttemptRow[];
+  onDeleteSegment?: (segmentId: string) => void;
 }
 
 function formatSegmentDuration(segment: SessionSegmentRow): string {
@@ -25,59 +28,72 @@ function formatSegmentDuration(segment: SessionSegmentRow): string {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-export function SessionDetail({
-  startedAt,
-  curriculumItemName,
-  segments,
-  attempts,
-}: SessionDetailProps) {
-  const date = dayjs(startedAt).format('MMM D, YYYY');
+function SwipeableSegment({
+  segment,
+  segAttempts,
+  onDelete,
+}: {
+  segment: SessionSegmentRow;
+  segAttempts: AttemptRow[];
+  onDelete?: (segmentId: string) => void;
+}) {
+  const swipeableRef = useRef<Swipeable>(null);
 
-  // Group attempts by segment and ostinato
-  const attemptsBySegment = new Map<string, AttemptRow[]>();
-  for (const a of attempts) {
-    const existing = attemptsBySegment.get(a.session_segment_id) ?? [];
+  const byOstinato = new Map<Ostinato, AttemptRow[]>();
+  for (const a of segAttempts) {
+    const existing = byOstinato.get(a.ostinato) ?? [];
     existing.push(a);
-    attemptsBySegment.set(a.session_segment_id, existing);
+    byOstinato.set(a.ostinato, existing);
   }
 
+  const duration = formatSegmentDuration(segment);
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete Segment',
+      `Delete Segment ${segment.segment_number} and all its attempts?`,
+      [
+        { text: 'Cancel', style: 'cancel', onPress: () => swipeableRef.current?.close() },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => onDelete?.(segment.id),
+        },
+      ],
+    );
+  };
+
+  const renderRightActions = () => (
+    <Pressable style={styles.deleteAction} onPress={handleDelete}>
+      <Text style={styles.deleteActionText}>Delete</Text>
+    </Pressable>
+  );
+
   return (
-    <ScrollView
-      style={styles.scrollView}
-      contentContainerStyle={styles.content}
+    <Swipeable
+      ref={swipeableRef}
+      renderRightActions={onDelete ? renderRightActions : undefined}
+      overshootRight={false}
     >
-      <RNView style={styles.header}>
-        <Text style={styles.date}>{date}</Text>
-        <Text style={styles.curriculum}>{curriculumItemName}</Text>
-      </RNView>
+      <RNView style={styles.segmentBlock}>
+        <Text style={styles.segmentTitle}>
+          Segment {segment.segment_number}
+          {duration ? ` (${duration})` : ''}
+        </Text>
 
-      {segments.map((segment) => {
-        const segAttempts = attemptsBySegment.get(segment.id) ?? [];
-
-        // Group by ostinato
-        const byOstinato = new Map<Ostinato, AttemptRow[]>();
-        for (const a of segAttempts) {
-          const existing = byOstinato.get(a.ostinato) ?? [];
-          existing.push(a);
-          byOstinato.set(a.ostinato, existing);
-        }
-
-        const duration = formatSegmentDuration(segment);
-
-        return (
-          <RNView key={segment.id} style={styles.segmentBlock}>
-            <Text style={styles.segmentTitle}>
-              Segment {segment.segment_number}
-              {duration ? ` (${duration})` : ''}
-            </Text>
+        {segAttempts.length === 0 ? (
+          <Text style={styles.emptySegment}>No attempts</Text>
+        ) : (
+          <>
+            <RNView style={styles.tableHeader}>
+              <Text style={[styles.headerLabel, { width: 36 }]}>Ost.</Text>
+              <Text style={[styles.headerLabel, { width: 70 }]}>Tempo</Text>
+              <Text style={[styles.headerLabel, { flex: 1 }]}>Attempts</Text>
+            </RNView>
 
             {OSTINATOS.map((ost) => {
               const ostAttempts = byOstinato.get(ost);
               if (!ostAttempts || ostAttempts.length === 0) return null;
-
-              const hasPassing = ostAttempts.some(
-                (a) => a.mistakes <= 3 && a.ostinato_broke === 0,
-              );
 
               return (
                 <RNView key={ost} style={styles.ostinatoRow}>
@@ -116,14 +132,57 @@ export function SessionDetail({
                 </RNView>
               );
             })}
-          </RNView>
-        );
-      })}
-    </ScrollView>
+          </>
+        )}
+      </RNView>
+    </Swipeable>
+  );
+}
+
+export function SessionDetail({
+  startedAt,
+  curriculumItemName,
+  segments,
+  attempts,
+  onDeleteSegment,
+}: SessionDetailProps) {
+  const date = dayjs(startedAt).format('MMM D, YYYY');
+
+  const attemptsBySegment = new Map<string, AttemptRow[]>();
+  for (const a of attempts) {
+    const existing = attemptsBySegment.get(a.session_segment_id) ?? [];
+    existing.push(a);
+    attemptsBySegment.set(a.session_segment_id, existing);
+  }
+
+  return (
+    <GestureHandlerRootView style={styles.gestureRoot}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+      >
+        <RNView style={styles.header}>
+          <Text style={styles.date}>{date}</Text>
+          <Text style={styles.curriculum}>{curriculumItemName}</Text>
+        </RNView>
+
+        {segments.map((segment) => (
+          <SwipeableSegment
+            key={segment.id}
+            segment={segment}
+            segAttempts={attemptsBySegment.get(segment.id) ?? []}
+            onDelete={onDeleteSegment}
+          />
+        ))}
+      </ScrollView>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
+  gestureRoot: {
+    flex: 1,
+  },
   scrollView: {
     flex: 1,
     backgroundColor: colors.background,
@@ -157,6 +216,26 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.text,
     marginBottom: spacing.xs,
+  },
+  emptySegment: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    fontStyle: 'italic',
+  },
+  tableHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.xs,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    marginBottom: 2,
+  },
+  headerLabel: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   ostinatoRow: {
     flexDirection: 'row',
@@ -200,5 +279,18 @@ const styles = StyleSheet.create({
   passedCheck: {
     fontSize: fontSize.sm,
     color: colors.success,
+  },
+  deleteAction: {
+    backgroundColor: colors.danger,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 90,
+    borderRadius: borderRadius.lg,
+    marginLeft: spacing.sm,
+  },
+  deleteActionText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: fontSize.md,
   },
 });

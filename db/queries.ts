@@ -207,8 +207,8 @@ export function getAllSessions(): {
      LEFT JOIN session_segments ss ON ss.session_id = ps.id
      LEFT JOIN attempts a ON a.session_segment_id = ss.id
      LEFT JOIN curriculum_items ci ON ci.id = a.curriculum_item_id
-     WHERE ps.ended_at IS NOT NULL
      GROUP BY ps.id
+     HAVING COUNT(a.id) > 0
      ORDER BY ps.started_at DESC`,
   );
 }
@@ -273,6 +273,12 @@ export function getLastSegmentForSession(sessionId: string): SessionSegmentRow |
     'SELECT * FROM session_segments WHERE session_id = ? ORDER BY segment_number DESC LIMIT 1',
     sessionId,
   );
+}
+
+export function deleteSegment(id: string): void {
+  const db = getDb();
+  db.runSync('DELETE FROM attempts WHERE session_segment_id = ?', id);
+  db.runSync('DELETE FROM session_segments WHERE id = ?', id);
 }
 
 // ── Preferences ─────────────────────────────────────────────────────
