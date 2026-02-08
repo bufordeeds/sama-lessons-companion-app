@@ -1,7 +1,7 @@
 import { openDatabaseSync, type SQLiteDatabase } from 'expo-sqlite';
 import { initializeDatabase } from './schema';
 import { seedCurriculumData } from './seed';
-import type { CurriculumItemRow, AttemptRow, SessionSegmentRow } from '@/types';
+import type { CurriculumItemRow, AttemptRow, SessionSegmentRow, MasteryStatus } from '@/types';
 import type { Ostinato } from '@/constants/curriculum';
 
 let _db: SQLiteDatabase | null = null;
@@ -279,6 +279,219 @@ export function deleteSegment(id: string): void {
   const db = getDb();
   db.runSync('DELETE FROM attempts WHERE session_segment_id = ?', id);
   db.runSync('DELETE FROM session_segments WHERE id = ?', id);
+}
+
+// ── Progress Dashboard ──────────────────────────────────────────────
+
+export function getOverallStats(): {
+  totalSessions: number;
+  totalAttempts: number;
+  totalPracticeMinutes: number;
+  avgMistakes: number;
+} {
+  const row = getDb().getFirstSync<{
+    total_sessions: number;
+    total_attempts: number;
+    total_minutes: number;
+    avg_mistakes: number;
+  }>(
+    `SELECT
+       (SELECT COUNT(*) FROM practice_sessions ps2
+        WHERE EXISTS (SELECT 1 FROM session_segments ss2
+          JOIN attempts a2 ON a2.session_segment_id = ss2.id
+          WHERE ss2.session_id = ps2.id)) as total_sessions,
+       COUNT(a.id) as total_attempts,
+       (SELECT ROUND(SUM(
+         (julianday(COALESCE(ps3.ended_at, datetime('now'))) - julianday(ps3.started_at)) * 1440
+       )) FROM practice_sessions ps3
+        WHERE EXISTS (SELECT 1 FROM session_segments ss3
+          JOIN attempts a3 ON a3.session_segment_id = ss3.id
+          WHERE ss3.session_id = ps3.id)) as total_minutes,
+       ROUND(AVG(a.mistakes), 1) as avg_mistakes
+     FROM attempts a`,
+  );
+
+  return {
+    totalSessions: row?.total_sessions ?? 0,
+    totalAttempts: row?.total_attempts ?? 0,
+    totalPracticeMinutes: row?.total_minutes ?? 0,
+    avgMistakes: row?.avg_mistakes ?? 0,
+  };
+}
+
+export function getCurriculumProgress(): {
+  id: string;
+  name: string;
+  attemptCount: number;
+  ostinatosPassed: number;
+  lastPracticed: string | null;
+}[] {
+  return getDb().getAllSync(
+    `SELECT
+       ci.id,
+       ci.name,
+       COUNT(a.id) as attemptCount,
+       COUNT(DISTINCT CASE WHEN a.mistakes <= 3 AND a.ostinato_broke = 0 THEN a.ostinato END) as ostinatosPassed,
+       MAX(a.created_at) as lastPracticed
+     FROM curriculum_items ci
+     LEFT JOIN attempts a ON a.curriculum_item_id = ci.id
+     GROUP BY ci.id
+     ORDER BY ci.sort_order`,
+  );
+}
+
+export function getMasteryGrid(
+  curriculumItemId: string,
+): Map<Ostinato, { status: MasteryStatus; attemptCount: number }> {
+  const rows = getDb().getAllSync<{
+    ostinato: Ostinato;
+    attempt_count: number;
+    has_passing: number;
+    recent_avg: number;
+    recent_count: number;
+    recent_breaks: number;
+  }>(
+    `SELECT
+       ostinato,
+       COUNT(*) as attempt_count,
+       MAX(CASE WHEN mistakes <= 3 AND ostinato_broke = 0 THEN 1 ELSE 0 END) as has_passing,
+       (SELECT AVG(sub.mistakes) FROM (
+         SELECT mistakes FROM attempts a2
+         WHERE a2.curriculum_item_id = a.curriculum_item_id
+           AND a2.ostinato = a.ostinato
+         ORDER BY a2.created_at DESC LIMIT 10
+       ) sub) as recent_avg,
+       (SELECT COUNT(*) FROM (
+         SELECT id FROM attempts a3
+         WHERE a3.curriculum_item_id = a.curriculum_item_id
+           AND a3.ostinato = a.ostinato
+         ORDER BY a3.created_at DESC LIMIT 10
+       )) as recent_count,
+       (SELECT SUM(sub2.ostinato_broke) FROM (
+         SELECT ostinato_broke FROM attempts a4
+         WHERE a4.curriculum_item_id = a.curriculum_item_id
+           AND a4.ostinato = a.ostinato
+         ORDER BY a4.created_at DESC LIMIT 10
+       ) sub2) as recent_breaks
+     FROM attempts a
+     WHERE a.curriculum_item_id = ?
+     GROUP BY a.ostinato`,
+    curriculumItemId,
+  );
+
+  const map = new Map<Ostinato, { status: MasteryStatus; attemptCount: number }>();
+  for (const row of rows) {
+    let status: MasteryStatus = 'in_progress';
+    if (row.has_passing === 1) {
+      status = 'passed';
+      if (row.recent_count >= 10 && row.recent_avg <= 1 && row.recent_breaks === 0) {
+        status = 'mastered';
+      }
+    }
+    map.set(row.ostinato, { status, attemptCount: row.attempt_count });
+  }
+  return map;
+}
+
+export function getTempoHistory(curriculumItemId: string): {
+  ostinato: Ostinato;
+  tempo: number;
+  date: string;
+  passed: boolean;
+}[] {
+  return getDb()
+    .getAllSync<{
+      ostinato: Ostinato;
+      tempo: number;
+      date: string;
+      passed: number;
+    }>(
+      `SELECT
+         a.ostinato,
+         a.tempo,
+         date(a.created_at) as date,
+         CASE WHEN a.mistakes <= 3 AND a.ostinato_broke = 0 THEN 1 ELSE 0 END as passed
+       FROM attempts a
+       WHERE a.curriculum_item_id = ?
+       ORDER BY a.created_at`,
+      curriculumItemId,
+    )
+    .map((r) => ({ ...r, passed: r.passed === 1 }));
+}
+
+export function getAggregateTempoHistory(curriculumItemId: string): {
+  date: string;
+  avgTempo: number;
+  minTempo: number;
+  maxTempo: number;
+}[] {
+  return getDb().getAllSync(
+    `SELECT
+       date(a.created_at) as date,
+       ROUND(AVG(a.tempo), 0) as avgTempo,
+       MIN(a.tempo) as minTempo,
+       MAX(a.tempo) as maxTempo
+     FROM attempts a
+     WHERE a.curriculum_item_id = ?
+     GROUP BY date(a.created_at)
+     ORDER BY date`,
+    curriculumItemId,
+  );
+}
+
+export function getPracticeDays(): string[] {
+  return getDb()
+    .getAllSync<{ day: string }>(
+      `SELECT DISTINCT date(started_at) as day
+       FROM practice_sessions
+       ORDER BY day`,
+    )
+    .map((r) => r.day);
+}
+
+export function getStreakStats(): {
+  current: number;
+  longest: number;
+  totalDays: number;
+} {
+  const days = getPracticeDays();
+  if (days.length === 0) return { current: 0, longest: 0, totalDays: 0 };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = today.toISOString().slice(0, 10);
+
+  const daySet = new Set(days);
+
+  // Current streak: count backwards from today (or yesterday)
+  let current = 0;
+  let checkDate = new Date(today);
+  // If today isn't a practice day, start from yesterday
+  if (!daySet.has(todayStr)) {
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+  while (daySet.has(checkDate.toISOString().slice(0, 10))) {
+    current++;
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+
+  // Longest streak
+  let longest = 0;
+  let streak = 1;
+  for (let i = 1; i < days.length; i++) {
+    const prev = new Date(days[i - 1]);
+    const curr = new Date(days[i]);
+    const diff = (curr.getTime() - prev.getTime()) / 86400000;
+    if (diff === 1) {
+      streak++;
+    } else {
+      longest = Math.max(longest, streak);
+      streak = 1;
+    }
+  }
+  longest = Math.max(longest, streak);
+
+  return { current, longest, totalDays: days.length };
 }
 
 // ── Preferences ─────────────────────────────────────────────────────
