@@ -1,5 +1,6 @@
-import React, { useRef } from 'react';
-import { StyleSheet, ScrollView, View as RNView, Pressable, Alert } from 'react-native';
+import React, { useRef, useState, useCallback } from 'react';
+import { StyleSheet, ScrollView, View as RNView, Pressable, Alert, TextInput } from 'react-native';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Text } from '@/components/Themed';
 import { Swipeable } from 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -14,7 +15,9 @@ interface SessionDetailProps {
   curriculumItemName: string;
   segments: SessionSegmentRow[];
   attempts: AttemptRow[];
+  notes: string;
   onDeleteSegment?: (segmentId: string) => void;
+  onUpdateNotes?: (notes: string) => void;
 }
 
 function formatSegmentDuration(segment: SessionSegmentRow): string {
@@ -144,9 +147,23 @@ export function SessionDetail({
   curriculumItemName,
   segments,
   attempts,
+  notes,
   onDeleteSegment,
+  onUpdateNotes,
 }: SessionDetailProps) {
   const date = dayjs(startedAt).format('MMM D, YYYY');
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [draftNotes, setDraftNotes] = useState(notes);
+
+  const handleSaveNotes = useCallback(() => {
+    onUpdateNotes?.(draftNotes);
+    setIsEditingNotes(false);
+  }, [draftNotes, onUpdateNotes]);
+
+  const handleStartEditing = useCallback(() => {
+    setDraftNotes(notes);
+    setIsEditingNotes(true);
+  }, [notes]);
 
   const attemptsBySegment = new Map<string, AttemptRow[]>();
   for (const a of attempts) {
@@ -160,10 +177,62 @@ export function SessionDetail({
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
       >
         <RNView style={styles.header}>
           <Text style={styles.date}>{date}</Text>
           <Text style={styles.curriculum}>{curriculumItemName}</Text>
+        </RNView>
+
+        {/* Notes section */}
+        <RNView style={styles.notesBlock}>
+          <RNView style={styles.notesHeader}>
+            <Text style={styles.notesTitle}>Notes</Text>
+            {!isEditingNotes && (
+              <Pressable onPress={handleStartEditing} hitSlop={12}>
+                <FontAwesome
+                  name={notes ? 'pencil' : 'plus'}
+                  size={14}
+                  color={colors.textMuted}
+                />
+              </Pressable>
+            )}
+          </RNView>
+          {isEditingNotes ? (
+            <RNView style={styles.notesEditContainer}>
+              <TextInput
+                style={styles.notesInput}
+                value={draftNotes}
+                onChangeText={setDraftNotes}
+                placeholder="Teacher feedback, things to work on..."
+                placeholderTextColor={colors.textMuted}
+                multiline
+                autoFocus
+                textAlignVertical="top"
+              />
+              <RNView style={styles.notesActions}>
+                <Pressable
+                  style={styles.notesCancelButton}
+                  onPress={() => setIsEditingNotes(false)}
+                >
+                  <Text style={styles.notesCancelText}>Cancel</Text>
+                </Pressable>
+                <Pressable style={styles.notesSaveButton} onPress={handleSaveNotes}>
+                  <Text style={styles.notesSaveText}>Save</Text>
+                </Pressable>
+              </RNView>
+            </RNView>
+          ) : notes ? (
+            <Pressable onPress={handleStartEditing}>
+              <Text style={styles.notesText}>{notes}</Text>
+            </Pressable>
+          ) : (
+            <Pressable onPress={handleStartEditing}>
+              <Text style={styles.notesPlaceholder}>
+                Tap to add notes from your lesson...
+              </Text>
+            </Pressable>
+          )}
         </RNView>
 
         {segments.map((segment) => (
@@ -292,5 +361,71 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
     fontSize: fontSize.md,
+  },
+  notesBlock: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    gap: spacing.sm,
+  },
+  notesHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  notesTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  notesText: {
+    fontSize: fontSize.md,
+    color: colors.textSecondary,
+    lineHeight: 22,
+  },
+  notesPlaceholder: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    fontStyle: 'italic',
+  },
+  notesEditContainer: {
+    gap: spacing.sm,
+  },
+  notesInput: {
+    backgroundColor: colors.background,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    fontSize: fontSize.md,
+    color: colors.text,
+    minHeight: 100,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  notesActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: spacing.sm,
+  },
+  notesCancelButton: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.surfaceLight,
+  },
+  notesCancelText: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  notesSaveButton: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.primary,
+  },
+  notesSaveText: {
+    fontSize: fontSize.sm,
+    fontWeight: '700',
+    color: colors.background,
   },
 });

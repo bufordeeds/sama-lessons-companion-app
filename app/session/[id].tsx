@@ -8,6 +8,8 @@ import {
   getSessionAttemptsGrouped,
   getSessionCurriculumItemId,
   getCurriculumItems,
+  getSessionNotes,
+  updateSessionNotes,
   deleteSession,
   deleteSegment,
 } from '@/db/queries';
@@ -26,6 +28,7 @@ export default function SessionDetailScreen() {
   const [attempts, setAttempts] = useState<AttemptRow[]>([]);
   const [curriculumName, setCurriculumName] = useState('Practice');
   const [startedAt, setStartedAt] = useState('');
+  const [notes, setNotes] = useState('');
 
   const loadData = useCallback(() => {
     if (!id) return;
@@ -37,6 +40,7 @@ export default function SessionDetailScreen() {
     }
 
     setAttempts(getSessionAttemptsGrouped(id));
+    setNotes(getSessionNotes(id) ?? '');
 
     const curriculumId = getSessionCurriculumItemId(id);
     if (curriculumId) {
@@ -54,6 +58,12 @@ export default function SessionDetailScreen() {
     deleteSegment(segmentId);
     loadData();
   }, [loadData]);
+
+  const handleUpdateNotes = useCallback((text: string) => {
+    if (!id) return;
+    updateSessionNotes(id, text);
+    setNotes(text);
+  }, [id]);
 
   const handleContinue = () => {
     if (!id) return;
@@ -99,7 +109,9 @@ export default function SessionDetailScreen() {
         curriculumItemName={curriculumName}
         segments={segments}
         attempts={attempts}
+        notes={notes}
         onDeleteSegment={handleDeleteSegment}
+        onUpdateNotes={handleUpdateNotes}
       />
       <RNView style={styles.actionBar}>
         {canContinue && (

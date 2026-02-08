@@ -257,6 +257,22 @@ export function getSessionById(id: string): { id: string; started_at: string; en
   );
 }
 
+export function getSessionNotes(id: string): string | null {
+  const row = getDb().getFirstSync<{ notes: string | null }>(
+    'SELECT notes FROM practice_sessions WHERE id = ?',
+    id,
+  );
+  return row?.notes ?? null;
+}
+
+export function updateSessionNotes(id: string, notes: string): void {
+  getDb().runSync(
+    'UPDATE practice_sessions SET notes = ? WHERE id = ?',
+    notes || null,
+    id,
+  );
+}
+
 export function reopenSession(id: string): void {
   getDb().runSync('UPDATE practice_sessions SET ended_at = NULL WHERE id = ?', id);
 }
