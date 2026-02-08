@@ -1,19 +1,15 @@
-const tintColorLight = '#2f95dc';
-const tintColorDark = '#fff';
+import { colors } from './theme';
+
+// Both light and dark map to the same dark palette — forces always-dark UI
+const palette = {
+  text: colors.text,
+  background: colors.background,
+  tint: colors.primary,
+  tabIconDefault: colors.textMuted,
+  tabIconSelected: colors.primary,
+};
 
 export default {
-  light: {
-    text: '#000',
-    background: '#fff',
-    tint: tintColorLight,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#fff',
-    background: '#000',
-    tint: tintColorDark,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorDark,
-  },
+  light: palette,
+  dark: palette,
 };
