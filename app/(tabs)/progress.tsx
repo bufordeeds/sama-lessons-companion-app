@@ -104,7 +104,10 @@ export default function ProgressScreen() {
       />
 
       {hasData && (
-        <DashboardSection title="Overview">
+        <DashboardSection
+          title="Overview"
+          info="Your overall practice stats across all sessions and curriculum items. Sessions counts completed practice sessions, Attempts is total logged attempts, Practice is total time, and Avg Mistakes is your average mistakes per attempt."
+        >
           <StatsRow
             items={[
               { label: 'Sessions', value: overallStats.totalSessions },
@@ -121,11 +124,22 @@ export default function ProgressScreen() {
         </DashboardSection>
       )}
 
-      <DashboardSection title="Mastery">
+      <DashboardSection
+        title="Mastery"
+        info={"Each ostinato progresses through four levels:\n\n" +
+          "Not Started — No attempts yet\n" +
+          "In Progress — Practicing but not yet passed\n" +
+          "Passed ✓ — At least one attempt with 3 or fewer mistakes and the ostinato didn't break\n" +
+          "Mastered ★ — Last 10 attempts average 1 or fewer mistakes with no breaks\n\n" +
+          "Pass all 8 ostinatos, then work toward mastering them!"}
+      >
         <MasteryGrid grid={masteryGrid} />
       </DashboardSection>
 
-      <DashboardSection title="Streak">
+      <DashboardSection
+        title="Streak"
+        info="Practice consistently to build your streak! A streak counts consecutive days where you logged at least one practice session. Even a short session keeps the streak alive."
+      >
         <StreakCard
           current={streakStats.current}
           longest={streakStats.longest}
@@ -134,7 +148,10 @@ export default function ProgressScreen() {
         <PracticeCalendar practiceDays={practiceDays} />
       </DashboardSection>
 
-      <DashboardSection title="Tempo Progression">
+      <DashboardSection
+        title="Tempo Progression"
+        info="Track how your tempo changes over time. Overview shows your average tempo per session with a range band. By Ostinato shows individual tempo lines for each ostinato pattern. Increasing tempo while keeping mistakes low is the goal!"
+      >
         <TempoChart
           aggregateData={aggregateTempoData}
           ostinatoData={ostinatoTempoData}

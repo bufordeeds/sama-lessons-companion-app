@@ -36,6 +36,13 @@ const STATUS_COLORS: Record<MasteryStatus, { bg: string; border: string; text: s
   },
 };
 
+const LEGEND: { status: MasteryStatus; label: string; icon: string }[] = [
+  { status: 'not_started', label: 'Not Started', icon: '' },
+  { status: 'in_progress', label: 'In Progress', icon: '' },
+  { status: 'passed', label: 'Passed', icon: '✓' },
+  { status: 'mastered', label: 'Mastered', icon: '★' },
+];
+
 export function MasteryGrid({ grid }: MasteryGridProps) {
   const aOstinatos = OSTINATOS.filter((o) => o.endsWith('A'));
   const bOstinatos = OSTINATOS.filter((o) => o.endsWith('B'));
@@ -51,6 +58,26 @@ export function MasteryGrid({ grid }: MasteryGridProps) {
         {bOstinatos.map((ost) => (
           <MasteryCell key={ost} ostinato={ost} data={grid.get(ost)} />
         ))}
+      </View>
+      <View style={styles.legend}>
+        {LEGEND.map((item) => {
+          const palette = STATUS_COLORS[item.status];
+          return (
+            <View key={item.status} style={styles.legendItem}>
+              <View
+                style={[
+                  styles.legendSwatch,
+                  { backgroundColor: palette.bg, borderColor: palette.border },
+                ]}
+              >
+                {item.icon ? (
+                  <Text style={{ fontSize: 8, color: palette.text }}>{item.icon}</Text>
+                ) : null}
+              </View>
+              <Text style={styles.legendLabel}>{item.label}</Text>
+            </View>
+          );
+        })}
       </View>
     </View>
   );
@@ -120,5 +147,28 @@ const styles = StyleSheet.create({
     top: 4,
     right: 6,
     fontSize: fontSize.xs,
+  },
+  legend: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing.lg,
+    marginTop: spacing.sm,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  legendSwatch: {
+    width: 14,
+    height: 14,
+    borderRadius: 3,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  legendLabel: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
   },
 });
