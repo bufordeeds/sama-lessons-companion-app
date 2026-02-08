@@ -201,7 +201,9 @@ export function getAllSessions(): {
        a.curriculum_item_id,
        ci.name as curriculum_item_name,
        COUNT(DISTINCT ss.id) as segment_count,
-       ROUND((julianday(COALESCE(ps.ended_at, datetime('now'))) - julianday(ps.started_at)) * 1440) as duration_minutes,
+       (SELECT ROUND(SUM(
+         (julianday(COALESCE(ss2.ended_at, datetime('now'))) - julianday(ss2.started_at)) * 1440
+       )) FROM session_segments ss2 WHERE ss2.session_id = ps.id) as duration_minutes,
        COUNT(a.id) as total_attempts,
        ROUND(AVG(a.mistakes), 1) as avg_mistakes,
        MIN(a.tempo) as min_tempo,
@@ -323,11 +325,10 @@ export function getOverallStats(): {
           WHERE ss2.session_id = ps2.id)) as total_sessions,
        COUNT(a.id) as total_attempts,
        (SELECT ROUND(SUM(
-         (julianday(COALESCE(ps3.ended_at, datetime('now'))) - julianday(ps3.started_at)) * 1440
-       )) FROM practice_sessions ps3
-        WHERE EXISTS (SELECT 1 FROM session_segments ss3
-          JOIN attempts a3 ON a3.session_segment_id = ss3.id
-          WHERE ss3.session_id = ps3.id)) as total_minutes,
+         (julianday(COALESCE(ss3.ended_at, datetime('now'))) - julianday(ss3.started_at)) * 1440
+       )) FROM session_segments ss3
+        WHERE EXISTS (SELECT 1 FROM attempts a3
+          WHERE a3.session_segment_id = ss3.id)) as total_minutes,
        ROUND(AVG(a.mistakes), 1) as avg_mistakes
      FROM attempts a`,
   );
