@@ -9,18 +9,31 @@ interface MasteryGridProps {
   grid: Map<Ostinato, { status: MasteryStatus; attemptCount: number }>;
 }
 
-const STATUS_COLORS: Record<MasteryStatus, string> = {
-  not_started: colors.surface,
-  in_progress: colors.surfaceLight,
-  passed: colors.successDim,
-  mastered: colors.primaryDim,
-};
-
-const STATUS_BORDER: Record<MasteryStatus, string> = {
-  not_started: colors.border,
-  in_progress: colors.border,
-  passed: colors.success,
-  mastered: colors.primary,
+const STATUS_COLORS: Record<MasteryStatus, { bg: string; border: string; text: string; countText: string }> = {
+  not_started: {
+    bg: colors.surface,
+    border: colors.border,
+    text: colors.textMuted,
+    countText: colors.textMuted,
+  },
+  in_progress: {
+    bg: colors.surfaceLight,
+    border: colors.border,
+    text: colors.textSecondary,
+    countText: colors.textMuted,
+  },
+  passed: {
+    bg: '#1B5E20',          // deep green — high contrast base
+    border: colors.success,
+    text: '#E8F5E9',        // very light green text
+    countText: '#A5D6A7',   // medium green for secondary
+  },
+  mastered: {
+    bg: '#5C4A1E',          // deep gold
+    border: colors.primary,
+    text: '#FFF8E1',        // cream text
+    countText: '#D4A843',   // gold for secondary
+  },
 };
 
 export function MasteryGrid({ grid }: MasteryGridProps) {
@@ -31,22 +44,12 @@ export function MasteryGrid({ grid }: MasteryGridProps) {
     <View style={styles.grid}>
       <View style={styles.row}>
         {aOstinatos.map((ost) => (
-          <MasteryCell
-            key={ost}
-            ostinato={ost}
-            data={grid.get(ost)}
-            variant="A"
-          />
+          <MasteryCell key={ost} ostinato={ost} data={grid.get(ost)} />
         ))}
       </View>
       <View style={styles.row}>
         {bOstinatos.map((ost) => (
-          <MasteryCell
-            key={ost}
-            ostinato={ost}
-            data={grid.get(ost)}
-            variant="B"
-          />
+          <MasteryCell key={ost} ostinato={ost} data={grid.get(ost)} />
         ))}
       </View>
     </View>
@@ -56,44 +59,33 @@ export function MasteryGrid({ grid }: MasteryGridProps) {
 function MasteryCell({
   ostinato,
   data,
-  variant,
 }: {
   ostinato: Ostinato;
   data?: { status: MasteryStatus; attemptCount: number };
-  variant: 'A' | 'B';
 }) {
   const status = data?.status ?? 'not_started';
   const count = data?.attemptCount ?? 0;
-  const bgColor = STATUS_COLORS[status];
-  const borderColor = STATUS_BORDER[status];
-  const tint = variant === 'A' ? colors.ostinatoA : colors.ostinatoB;
+  const palette = STATUS_COLORS[status];
 
   return (
     <View
       style={[
         styles.cell,
-        {
-          backgroundColor: status === 'not_started' ? tint : bgColor,
-          borderColor,
-        },
+        { backgroundColor: palette.bg, borderColor: palette.border },
       ]}
     >
-      <Text
-        style={[
-          styles.label,
-          status === 'mastered' && styles.labelMastered,
-          status === 'passed' && styles.labelPassed,
-        ]}
-      >
-        {ostinato}
-      </Text>
+      <Text style={[styles.label, { color: palette.text }]}>{ostinato}</Text>
       {count > 0 && (
-        <Text style={styles.count}>
-          {count} {count === 1 ? 'att' : 'att'}
+        <Text style={[styles.count, { color: palette.countText }]}>
+          {count} att
         </Text>
       )}
-      {status === 'passed' && <Text style={styles.statusIcon}>✓</Text>}
-      {status === 'mastered' && <Text style={styles.statusIcon}>★</Text>}
+      {status === 'passed' && (
+        <Text style={[styles.statusIcon, { color: '#A5D6A7' }]}>✓</Text>
+      )}
+      {status === 'mastered' && (
+        <Text style={[styles.statusIcon, { color: colors.primary }]}>★</Text>
+      )}
     </View>
   );
 }
@@ -118,17 +110,9 @@ const styles = StyleSheet.create({
   label: {
     fontSize: fontSize.md,
     fontWeight: '700',
-    color: colors.textSecondary,
-  },
-  labelPassed: {
-    color: colors.success,
-  },
-  labelMastered: {
-    color: colors.primary,
   },
   count: {
     fontSize: fontSize.xs,
-    color: colors.textMuted,
     fontVariant: ['tabular-nums'],
   },
   statusIcon: {
@@ -136,6 +120,5 @@ const styles = StyleSheet.create({
     top: 4,
     right: 6,
     fontSize: fontSize.xs,
-    color: colors.success,
   },
 });

@@ -17,6 +17,11 @@ export async function ensureDbReady(): Promise<SQLiteDatabase> {
   const db = getDb();
   initializeDatabase(db);
   seedCurriculumData(db);
+
+  // Seed handwritten practice data (runs once, guarded by preference flag)
+  const { seedPracticeData } = require('./seedPracticeData');
+  seedPracticeData();
+
   return db;
 }
 
