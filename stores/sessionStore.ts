@@ -31,6 +31,8 @@ interface SessionStore {
   startNewSegment: () => void;
   endCurrentSegment: () => void;
 
+  resumeSession: (sessionId: string) => void;
+
   // During practice
   selectOstinato: (ostinato: Ostinato) => void;
   setTempo: (tempo: number) => void;
@@ -80,6 +82,51 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       currentSegmentAttempts: [],
       betweenSegments: false,
       lastEndedSegmentId: null,
+    });
+  },
+
+  resumeSession: (sessionId: string) => {
+    const session = queries.getSessionById(sessionId);
+    if (!session) return;
+
+    // Reopen session
+    queries.reopenSession(sessionId);
+
+    // Get curriculum item from existing attempts
+    const curriculumItemId = queries.getSessionCurriculumItemId(sessionId) ?? '';
+
+    // Get last segment to determine next segment number
+    const lastSegment = queries.getLastSegmentForSession(sessionId);
+    const nextNumber = lastSegment ? lastSegment.segment_number + 1 : 1;
+
+    // Get last attempt's tempo to restore it
+    const lastAttempts = queries.getSessionAttemptsGrouped(sessionId);
+    const lastTempo = lastAttempts.length > 0
+      ? lastAttempts[lastAttempts.length - 1].tempo
+      : 100;
+
+    // Create a new segment for the resumed session
+    const now = new Date().toISOString();
+    const segmentId = randomUUID();
+    queries.createSegment(segmentId, sessionId, nextNumber, now);
+
+    set({
+      activeSession: {
+        sessionId,
+        currentSegmentId: segmentId,
+        segmentNumber: nextNumber,
+        curriculumItemId,
+        selectedOstinato: '1A',
+        tempo: lastTempo,
+        mistakeCount: 0,
+        ostinatoBroke: false,
+        sessionStartedAt: session.started_at,
+        segmentStartedAt: now,
+      },
+      currentSegmentAttempts: [],
+      betweenSegments: false,
+      lastEndedSegmentId: null,
+      lastLoggedAttemptId: null,
     });
   },
 

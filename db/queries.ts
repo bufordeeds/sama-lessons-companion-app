@@ -243,6 +243,38 @@ export function getSessionCurriculumItemId(sessionId: string): string | null {
   return row?.curriculum_item_id ?? null;
 }
 
+// ── Session Management ──────────────────────────────────────────────
+
+export function getSessionById(id: string): { id: string; started_at: string; ended_at: string | null } | null {
+  return getDb().getFirstSync<{ id: string; started_at: string; ended_at: string | null }>(
+    'SELECT id, started_at, ended_at FROM practice_sessions WHERE id = ?',
+    id,
+  );
+}
+
+export function reopenSession(id: string): void {
+  getDb().runSync('UPDATE practice_sessions SET ended_at = NULL WHERE id = ?', id);
+}
+
+export function deleteSession(id: string): void {
+  const db = getDb();
+  db.runSync(
+    `DELETE FROM attempts WHERE session_segment_id IN (
+       SELECT id FROM session_segments WHERE session_id = ?
+     )`,
+    id,
+  );
+  db.runSync('DELETE FROM session_segments WHERE session_id = ?', id);
+  db.runSync('DELETE FROM practice_sessions WHERE id = ?', id);
+}
+
+export function getLastSegmentForSession(sessionId: string): SessionSegmentRow | null {
+  return getDb().getFirstSync<SessionSegmentRow>(
+    'SELECT * FROM session_segments WHERE session_id = ? ORDER BY segment_number DESC LIMIT 1',
+    sessionId,
+  );
+}
+
 // ── Preferences ─────────────────────────────────────────────────────
 
 export function getPreference(key: string): string | null {

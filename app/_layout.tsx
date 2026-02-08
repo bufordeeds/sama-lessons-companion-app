@@ -50,6 +50,7 @@ function RootLayoutNav() {
           name="session/[id]"
           options={{
             title: 'Session Detail',
+            headerBackTitle: 'History',
             headerStyle: { backgroundColor: colors.background },
             headerTintColor: colors.text,
           }}
