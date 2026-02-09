@@ -3,7 +3,7 @@ const { getDefaultConfig } = require('expo/metro-config');
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
 
-// Bundle .mxl (compressed MusicXML) files as assets
-config.resolver.assetExts.push('mxl');
+// Bundle .mxl (compressed MusicXML) and .bundle (OSMD JS) files as assets
+config.resolver.assetExts.push('mxl', 'bundle');
 
 module.exports = config;

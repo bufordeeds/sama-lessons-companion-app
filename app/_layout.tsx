@@ -55,6 +55,15 @@ function RootLayoutNav() {
             headerTintColor: colors.text,
           }}
         />
+        <Stack.Screen
+          name="sheet-music/[id]"
+          options={{
+            title: 'Sheet Music',
+            headerBackTitle: 'Back',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+          }}
+        />
       </Stack>
     </ThemeProvider>
   );

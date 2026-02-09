@@ -20,6 +20,8 @@ import { AttemptLogger } from '@/components/practice/AttemptLogger';
 import { AttemptList } from '@/components/practice/AttemptList';
 import { SessionTimer } from '@/components/practice/SessionTimer';
 import { UndoBanner } from '@/components/practice/UndoBanner';
+import { SheetMusicLibrary } from '@/components/practice/SheetMusicLibrary';
+import { getSheetForCurriculum } from '@/constants/sheetMusic';
 import type { CurriculumItemRow } from '@/types';
 import type { Ostinato } from '@/constants/curriculum';
 import { colors, spacing, fontSize, borderRadius, touchTarget } from '@/constants/theme';
@@ -139,6 +141,8 @@ export default function PracticeScreen() {
       (i) => i.id === activeSession.curriculumItemId,
     );
 
+    const sheet = getSheetForCurriculum(activeSession.curriculumItemId);
+
     const loggerContent = (
       <>
         <RNView style={styles.sessionHeader}>
@@ -152,6 +156,15 @@ export default function PracticeScreen() {
           </RNView>
           <SessionTimer startedAt={activeSession.sessionStartedAt} />
         </RNView>
+
+        {sheet && (
+          <Pressable
+            style={styles.sheetMusicButton}
+            onPress={() => router.push(`/sheet-music/${sheet.id}` as any)}
+          >
+            <Text style={styles.sheetMusicButtonText}>View Sheet Music</Text>
+          </Pressable>
+        )}
 
         <OstinatoSelector
           selectedOstinato={activeSession.selectedOstinato}
@@ -239,7 +252,10 @@ export default function PracticeScreen() {
 
   // Idle — start session
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.scrollView}
+      contentContainerStyle={styles.idleContent}
+    >
       <Text style={styles.appTitle}>SAMA Drum Practice</Text>
 
       <RNView style={styles.curriculumPicker}>
@@ -268,7 +284,11 @@ export default function PracticeScreen() {
       <Pressable style={styles.startButton} onPress={handleStartSession}>
         <Text style={styles.startButtonText}>Start Practice</Text>
       </Pressable>
-    </View>
+
+      <RNView style={styles.librarySection}>
+        <SheetMusicLibrary />
+      </RNView>
+    </ScrollView>
   );
 }
 
@@ -288,6 +308,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.background,
     padding: spacing.xl,
+  },
+  idleContent: {
+    padding: spacing.xl,
+    paddingBottom: spacing.xxxl,
+    alignItems: 'center',
   },
   scrollView: {
     flex: 1,
@@ -380,6 +405,23 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xl,
     fontWeight: '700',
     color: colors.background,
+  },
+  librarySection: {
+    width: '100%',
+    marginTop: spacing.xxl,
+  },
+  sheetMusicButton: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+  },
+  sheetMusicButtonText: {
+    fontSize: fontSize.md,
+    fontWeight: '600',
+    color: colors.primary,
   },
 
   // Footer buttons
