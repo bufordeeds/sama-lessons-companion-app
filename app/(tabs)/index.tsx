@@ -24,6 +24,7 @@ import { SheetMusicLibrary } from '@/components/practice/SheetMusicLibrary';
 import { getSheetForCurriculum } from '@/constants/sheetMusic';
 import type { CurriculumItemRow } from '@/types';
 import type { Ostinato } from '@/constants/curriculum';
+import { LESSON_QUOTES, getQuoteOfTheDay } from '@/constants/quotes';
 import { colors, spacing, fontSize, borderRadius, touchTarget } from '@/constants/theme';
 
 export default function PracticeScreen() {
@@ -55,6 +56,11 @@ export default function PracticeScreen() {
   const [curriculumItems, setCurriculumItems] = useState<CurriculumItemRow[]>([]);
   const [selectedItemId, setSelectedItemId] = useState<string>('');
   const [initialTempo, setInitialTempo] = useState<number>(100);
+  const [quoteIndex, setQuoteIndex] = useState(() => {
+    const dayIndex = Math.floor(Date.now() / 86400000);
+    return dayIndex % LESSON_QUOTES.length;
+  });
+  const quote = LESSON_QUOTES[quoteIndex % LESSON_QUOTES.length];
 
   // Load curriculum items and saved preferences
   useEffect(() => {
@@ -257,6 +263,10 @@ export default function PracticeScreen() {
       contentContainerStyle={styles.idleContent}
     >
       <Text style={styles.appTitle}>SAMA Drum Practice</Text>
+      <Pressable style={styles.quoteContainer} onPress={() => setQuoteIndex((i) => i + 1)}>
+        <Text style={styles.quoteText}>"{quote.text}"</Text>
+        <Text style={styles.quoteSource}>— {quote.source}</Text>
+      </Pressable>
 
       <RNView style={styles.curriculumPicker}>
         <Text style={styles.pickerLabel}>Curriculum Item</Text>
@@ -359,7 +369,24 @@ const styles = StyleSheet.create({
   appTitle: {
     fontSize: fontSize.lg,
     color: colors.textSecondary,
+    marginBottom: spacing.md,
+  },
+  quoteContainer: {
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
     marginBottom: spacing.xxl,
+  },
+  quoteText: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  quoteSource: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    marginTop: spacing.xs,
   },
   curriculumPicker: {
     width: '100%',
