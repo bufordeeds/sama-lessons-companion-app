@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Pressable, View as RNView } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from '@/components/Themed';
 import { getOstinatosForCurriculum, type Ostinato } from '@/constants/curriculum';
 import { colors, spacing, fontSize, borderRadius, touchTarget } from '@/constants/theme';
@@ -100,7 +101,7 @@ function OstinatoCell({
       <Text style={[styles.cellText, isSelected && styles.cellTextSelected]}>
         {ostinato}
       </Text>
-      {passed && <Text style={styles.checkmark}>✓</Text>}
+      {passed && <Ionicons name="checkmark" size={14} color={colors.success} style={styles.checkmark} />}
     </Pressable>
   );
 }
@@ -141,8 +142,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   checkmark: {
-    fontSize: fontSize.sm,
-    color: colors.success,
     marginTop: 2,
   },
 });

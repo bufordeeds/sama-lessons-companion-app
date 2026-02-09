@@ -6,6 +6,7 @@ import {
   ScrollView,
   View as RNView,
 } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from '@/components/Themed';
 import { metronome } from '@/services/MetronomeService';
 import {
@@ -86,7 +87,7 @@ export function SoundPicker({
                       {sound.name}
                     </Text>
                     {currentSoundId === sound.id && (
-                      <Text style={styles.checkmark}>✓</Text>
+                      <Ionicons name="checkmark" size={20} color={colors.primary} />
                     )}
                   </Pressable>
                 ))}
@@ -168,10 +169,5 @@ const styles = StyleSheet.create({
   soundNameSelected: {
     fontWeight: '600',
     color: colors.primary,
-  },
-  checkmark: {
-    fontSize: fontSize.md,
-    color: colors.primary,
-    fontWeight: '700',
   },
 });

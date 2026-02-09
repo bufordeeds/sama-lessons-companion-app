@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from '@/components/Themed';
 import { getOstinatosForCurriculum, type Ostinato } from '@/constants/curriculum';
 import type { MasteryStatus } from '@/types';
@@ -37,11 +38,11 @@ const STATUS_COLORS: Record<MasteryStatus, { bg: string; border: string; text: s
   },
 };
 
-const LEGEND: { status: MasteryStatus; label: string; icon: string }[] = [
-  { status: 'not_started', label: 'Not Started', icon: '' },
-  { status: 'in_progress', label: 'In Progress', icon: '' },
-  { status: 'passed', label: 'Passed', icon: '✓' },
-  { status: 'mastered', label: 'Mastered', icon: '★' },
+const LEGEND: { status: MasteryStatus; label: string; icon?: keyof typeof Ionicons.glyphMap }[] = [
+  { status: 'not_started', label: 'Not Started' },
+  { status: 'in_progress', label: 'In Progress' },
+  { status: 'passed', label: 'Passed', icon: 'checkmark' },
+  { status: 'mastered', label: 'Mastered', icon: 'star' },
 ];
 
 export function MasteryGrid({ grid, curriculumItemId }: MasteryGridProps) {
@@ -93,7 +94,7 @@ export function MasteryGrid({ grid, curriculumItemId }: MasteryGridProps) {
                 ]}
               >
                 {item.icon ? (
-                  <Text style={{ fontSize: 8, color: palette.text }}>{item.icon}</Text>
+                  <Ionicons name={item.icon} size={8} color={palette.text} />
                 ) : null}
               </View>
               <Text style={styles.legendLabel}>{item.label}</Text>
@@ -130,10 +131,10 @@ function MasteryCell({
         </Text>
       )}
       {status === 'passed' && (
-        <Text style={[styles.statusIcon, { color: '#A5D6A7' }]}>✓</Text>
+        <Ionicons name="checkmark" size={12} color="#A5D6A7" style={styles.statusIcon} />
       )}
       {status === 'mastered' && (
-        <Text style={[styles.statusIcon, { color: colors.primary }]}>★</Text>
+        <Ionicons name="star" size={12} color={colors.primary} style={styles.statusIcon} />
       )}
     </View>
   );
@@ -168,7 +169,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 4,
     right: 6,
-    fontSize: fontSize.xs,
   },
   legend: {
     flexDirection: 'row',

@@ -11,6 +11,7 @@ class MetronomeService {
   private currentSoundId: string = DEFAULT_SOUND_ID;
   private beatCount = 0;
   private tempo = 100;
+  private _subdivision = 1; // 1 = quarter notes, 2 = eighth notes
   private _isPlaying = false;
   private _isMuted = false;
   private isInitialized = false;
@@ -79,7 +80,7 @@ class MetronomeService {
     this._isPlaying = true;
     this.onTick = onTick ?? null;
 
-    const msPerBeat = 60000 / tempo;
+    const msPerClick = 60000 / (tempo * this._subdivision);
 
     // Play first beat immediately
     this.playBeat();
@@ -87,11 +88,12 @@ class MetronomeService {
     this.intervalId = setInterval(() => {
       this.beatCount++;
       this.playBeat();
-    }, msPerBeat);
+    }, msPerClick);
   }
 
   private playBeat(): void {
-    const isAccent = this.beatCount % 4 === 0; // Beat 1 of 4/4
+    const clicksPerMeasure = 4 * this._subdivision;
+    const isAccent = this.beatCount % clicksPerMeasure === 0; // Beat 1 of 4/4
 
     if (!this._isMuted) {
       try {
@@ -121,10 +123,18 @@ class MetronomeService {
   setTempo(tempo: number): void {
     this.tempo = tempo;
     if (this._isPlaying) {
-      // Restart with new tempo
       const cb = this.onTick;
       this.stop();
       this.start(tempo, cb ?? undefined);
+    }
+  }
+
+  setSubdivision(sub: 1 | 2): void {
+    this._subdivision = sub;
+    if (this._isPlaying) {
+      const cb = this.onTick;
+      this.stop();
+      this.start(this.tempo, cb ?? undefined);
     }
   }
 
@@ -155,6 +165,10 @@ class MetronomeService {
 
   get currentTempo(): number {
     return this.tempo;
+  }
+
+  get subdivision(): 1 | 2 {
+    return this._subdivision;
   }
 
   get currentBeat(): number {

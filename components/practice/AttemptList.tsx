@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, FlatList, Pressable, View as RNView } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from '@/components/Themed';
 import type { AttemptRow } from '@/types';
 import type { Ostinato } from '@/constants/curriculum';
@@ -46,7 +47,8 @@ export function AttemptList({
                 </Text>
                 {passed && (
                   <RNView style={styles.passedBadge}>
-                    <Text style={styles.passedText}>✓ Passed</Text>
+                    <Ionicons name="checkmark" size={12} color={colors.success} />
+                    <Text style={styles.passedText}>Passed</Text>
                   </RNView>
                 )}
                 {broke && (
@@ -60,7 +62,7 @@ export function AttemptList({
                 onPress={() => onDelete(item.id)}
                 hitSlop={8}
               >
-                <Text style={styles.deleteText}>✕</Text>
+                <Ionicons name="close" size={18} color={colors.textMuted} />
               </Pressable>
             </RNView>
           );
@@ -117,6 +119,9 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   passedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
     backgroundColor: colors.successDim,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
@@ -143,9 +148,5 @@ const styles = StyleSheet.create({
     height: 32,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  deleteText: {
-    fontSize: fontSize.md,
-    color: colors.textMuted,
   },
 });

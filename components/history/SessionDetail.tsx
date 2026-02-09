@@ -1,6 +1,7 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { StyleSheet, ScrollView, View as RNView, Pressable, Alert, TextInput } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from '@/components/Themed';
 import { Swipeable } from 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -126,7 +127,7 @@ function SwipeableSegment({
                             {!isLast ? ',' : ''}
                           </Text>
                           {passed && (
-                            <Text style={styles.passedCheck}> ✓</Text>
+                            <Ionicons name="checkmark" size={14} color={colors.success} style={styles.passedCheck} />
                           )}
                           {broke && (
                             <Badge label="broke" variant="broke" />
@@ -361,8 +362,7 @@ const styles = StyleSheet.create({
     color: colors.success,
   },
   passedCheck: {
-    fontSize: fontSize.sm,
-    color: colors.success,
+    marginLeft: 2,
   },
   deleteAction: {
     backgroundColor: colors.danger,
