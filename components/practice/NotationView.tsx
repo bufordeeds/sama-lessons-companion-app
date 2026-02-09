@@ -14,6 +14,11 @@ interface NotationViewProps {
 // Cache the OSMD JS content so we only read it once per app session
 let cachedOsmdJs: string | null = null;
 
+/** Strip file:// prefix from URI to get a filesystem path */
+function uriToPath(uri: string): string {
+  return uri.replace(/^file:\/\//, '');
+}
+
 async function getOsmdJs(): Promise<string> {
   if (cachedOsmdJs) return cachedOsmdJs;
 
@@ -22,7 +27,7 @@ async function getOsmdJs(): Promise<string> {
   );
   await asset.downloadAsync();
   if (!asset.localUri) throw new Error('Failed to download OSMD asset');
-  const file = new File(asset.localUri);
+  const file = new File(uriToPath(asset.localUri));
   cachedOsmdJs = await file.text();
   return cachedOsmdJs;
 }
@@ -31,7 +36,7 @@ async function getMxlBase64(mxlAsset: number): Promise<string> {
   const asset = Asset.fromModule(mxlAsset);
   await asset.downloadAsync();
   if (!asset.localUri) throw new Error('Failed to download MXL asset');
-  const file = new File(asset.localUri);
+  const file = new File(uriToPath(asset.localUri));
   return await file.base64();
 }
 
