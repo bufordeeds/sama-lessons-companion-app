@@ -8,7 +8,10 @@ import { NotationView } from '@/components/practice/NotationView';
 import { MetronomeBar } from '@/components/practice/MetronomeBar';
 import { CompactAttemptLogger } from '@/components/practice/CompactAttemptLogger';
 import { UndoBanner } from '@/components/practice/UndoBanner';
+import { SoundPicker } from '@/components/practice/SoundPicker';
 import { useSessionStore } from '@/stores/sessionStore';
+import { getPreference } from '@/db/queries';
+import { DEFAULT_SOUND_ID } from '@/constants/metronome';
 import { colors, spacing, fontSize, borderRadius, touchTarget } from '@/constants/theme';
 
 export default function SheetMusicScreen() {
@@ -20,6 +23,10 @@ export default function SheetMusicScreen() {
   const { undoLastAttempt, adjustTempo } = useSessionStore();
 
   const [loggerVisible, setLoggerVisible] = useState(false);
+  const [soundPickerVisible, setSoundPickerVisible] = useState(false);
+  const [currentSoundId, setCurrentSoundId] = useState(
+    () => getPreference('metronome_sound') ?? DEFAULT_SOUND_ID,
+  );
 
   // Use session tempo if active, otherwise use a default
   const tempo = activeSession?.tempo ?? 100;
@@ -63,6 +70,7 @@ export default function SheetMusicScreen() {
       <MetronomeBar
         tempo={tempo}
         onTempoChange={handleTempoChange}
+        onOpenSoundPicker={() => setSoundPickerVisible(true)}
       />
 
       {/* Log attempt button — only when in a session and not a reference sheet */}
@@ -91,6 +99,14 @@ export default function SheetMusicScreen() {
         visible={!!lastLoggedAttemptId}
         onUndo={handleUndo}
         onDismiss={handleDismissUndo}
+      />
+
+      {/* Sound picker modal */}
+      <SoundPicker
+        visible={soundPickerVisible}
+        onClose={() => setSoundPickerVisible(false)}
+        currentSoundId={currentSoundId}
+        onSoundChange={setCurrentSoundId}
       />
     </RNView>
   );

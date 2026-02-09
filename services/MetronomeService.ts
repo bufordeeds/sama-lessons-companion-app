@@ -1,12 +1,12 @@
-import { Audio } from 'expo-av';
-import { DEFAULT_SOUND_ID, getSoundById, type MetronomeSound } from '@/constants/metronome';
+import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
+import { DEFAULT_SOUND_ID, getSoundById } from '@/constants/metronome';
 
 type TickCallback = (beat: number) => void;
 
 class MetronomeService {
   private static instance: MetronomeService | null = null;
-  private hiSound: Audio.Sound | null = null;
-  private loSound: Audio.Sound | null = null;
+  private hiPlayer: AudioPlayer | null = null;
+  private loPlayer: AudioPlayer | null = null;
   private intervalId: ReturnType<typeof setInterval> | null = null;
   private currentSoundId: string = DEFAULT_SOUND_ID;
   private beatCount = 0;
@@ -26,10 +26,10 @@ class MetronomeService {
   async initialize(soundId?: string): Promise<void> {
     if (this.isInitialized) return;
 
-    await Audio.setAudioModeAsync({
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: false,
-      shouldDuckAndroid: true,
+    await setAudioModeAsync({
+      playsInSilentMode: true,
+      shouldPlayInBackground: false,
+      interruptionMode: 'mixWithOthers',
     });
 
     await this.loadSounds(soundId ?? this.currentSoundId);
@@ -37,29 +37,23 @@ class MetronomeService {
   }
 
   private async loadSounds(soundId: string): Promise<void> {
-    // Unload previous sounds
-    await this.unloadSounds();
+    this.removePlayers();
 
     const sound = getSoundById(soundId);
     this.currentSoundId = sound.id;
 
-    const [{ sound: hi }, { sound: lo }] = await Promise.all([
-      Audio.Sound.createAsync(sound.hi),
-      Audio.Sound.createAsync(sound.lo),
-    ]);
-
-    this.hiSound = hi;
-    this.loSound = lo;
+    this.hiPlayer = createAudioPlayer(sound.hi);
+    this.loPlayer = createAudioPlayer(sound.lo);
   }
 
-  private async unloadSounds(): Promise<void> {
-    if (this.hiSound) {
-      await this.hiSound.unloadAsync();
-      this.hiSound = null;
+  private removePlayers(): void {
+    if (this.hiPlayer) {
+      this.hiPlayer.remove();
+      this.hiPlayer = null;
     }
-    if (this.loSound) {
-      await this.loSound.unloadAsync();
-      this.loSound = null;
+    if (this.loPlayer) {
+      this.loPlayer.remove();
+      this.loPlayer = null;
     }
   }
 
@@ -71,14 +65,11 @@ class MetronomeService {
   /** Play a single click (for preview in sound picker) */
   async playPreview(soundId: string, accent: boolean = true): Promise<void> {
     const sound = getSoundById(soundId);
-    const { sound: preview } = await Audio.Sound.createAsync(accent ? sound.hi : sound.lo);
-    await preview.playAsync();
-    // Cleanup after playback
-    preview.setOnPlaybackStatusUpdate((status) => {
-      if ('didJustFinish' in status && status.didJustFinish) {
-        preview.unloadAsync();
-      }
-    });
+    const preview = createAudioPlayer(accent ? sound.hi : sound.lo);
+    preview.seekTo(0);
+    preview.play();
+    // Remove after a short delay to allow playback
+    setTimeout(() => preview.remove(), 2000);
   }
 
   start(tempo: number, onTick?: TickCallback): void {
@@ -99,15 +90,15 @@ class MetronomeService {
     }, msPerBeat);
   }
 
-  private async playBeat(): Promise<void> {
+  private playBeat(): void {
     const isAccent = this.beatCount % 4 === 0; // Beat 1 of 4/4
 
     if (!this._isMuted) {
       try {
-        const player = isAccent ? this.hiSound : this.loSound;
+        const player = isAccent ? this.hiPlayer : this.loPlayer;
         if (player) {
-          await player.setPositionAsync(0);
-          await player.playAsync();
+          player.seekTo(0);
+          player.play();
         }
       } catch {
         // Ignore playback errors
@@ -170,9 +161,9 @@ class MetronomeService {
     return this.beatCount;
   }
 
-  async cleanup(): Promise<void> {
+  cleanup(): void {
     this.stop();
-    await this.unloadSounds();
+    this.removePlayers();
     this.isInitialized = false;
   }
 }

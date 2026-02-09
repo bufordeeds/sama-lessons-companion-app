@@ -3,7 +3,7 @@ import { StyleSheet, ActivityIndicator, View as RNView } from 'react-native';
 import { Text } from '@/components/Themed';
 import { WebView } from 'react-native-webview';
 import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system';
+import { File } from 'expo-file-system';
 import { colors, spacing, fontSize } from '@/constants/theme';
 
 interface NotationViewProps {
@@ -18,11 +18,12 @@ async function getOsmdJs(): Promise<string> {
   if (cachedOsmdJs) return cachedOsmdJs;
 
   const asset = Asset.fromModule(
-    require('@/assets/notation/opensheetmusicdisplay.min.bundle'),
+    require('../../assets/notation/opensheetmusicdisplay.min.bundle'),
   );
   await asset.downloadAsync();
   if (!asset.localUri) throw new Error('Failed to download OSMD asset');
-  cachedOsmdJs = await FileSystem.readAsStringAsync(asset.localUri);
+  const file = new File(asset.localUri);
+  cachedOsmdJs = await file.text();
   return cachedOsmdJs;
 }
 
@@ -30,9 +31,8 @@ async function getMxlBase64(mxlAsset: number): Promise<string> {
   const asset = Asset.fromModule(mxlAsset);
   await asset.downloadAsync();
   if (!asset.localUri) throw new Error('Failed to download MXL asset');
-  return await FileSystem.readAsStringAsync(asset.localUri, {
-    encoding: 'base64',
-  });
+  const file = new File(asset.localUri);
+  return await file.base64();
 }
 
 function buildHtml(osmdJs: string): string {
