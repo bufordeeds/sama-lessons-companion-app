@@ -16,6 +16,7 @@ export interface PracticeSessionRow {
   started_at: string;
   ended_at: string | null;
   notes: string | null;
+  video_url: string | null;
   created_at: string;
 }
 

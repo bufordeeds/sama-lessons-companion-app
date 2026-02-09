@@ -52,25 +52,32 @@ export function SessionCard({
         {segmentCount} segment{segmentCount !== 1 ? 's' : ''} ·{' '}
         {formatDuration(durationMinutes)}
       </Text>
-      <Text style={styles.detail}>
-        {totalAttempts} attempt{totalAttempts !== 1 ? 's' : ''} · Avg{' '}
-        {avgMistakes} mistakes
-      </Text>
-      <Text style={styles.detail}>Tempo: {tempoRange}</Text>
 
-      <RNView style={styles.progressContainer}>
-        <RNView style={styles.progressTrack}>
-          <RNView
-            style={[
-              styles.progressFill,
-              { width: `${(ostinatosPassed / 8) * 100}%` },
-            ]}
-          />
-        </RNView>
-        <Text style={styles.progressLabel}>
-          {ostinatosPassed}/8 ostinatos passed
-        </Text>
-      </RNView>
+      {totalAttempts > 0 ? (
+        <>
+          <Text style={styles.detail}>
+            {totalAttempts} attempt{totalAttempts !== 1 ? 's' : ''} · Avg{' '}
+            {avgMistakes} mistakes
+          </Text>
+          <Text style={styles.detail}>Tempo: {tempoRange}</Text>
+
+          <RNView style={styles.progressContainer}>
+            <RNView style={styles.progressTrack}>
+              <RNView
+                style={[
+                  styles.progressFill,
+                  { width: `${(ostinatosPassed / 8) * 100}%` },
+                ]}
+              />
+            </RNView>
+            <Text style={styles.progressLabel}>
+              {ostinatosPassed}/8 ostinatos passed
+            </Text>
+          </RNView>
+        </>
+      ) : (
+        <Text style={styles.notesOnly}>Notes & video only</Text>
+      )}
     </Pressable>
   );
 }
@@ -120,5 +127,10 @@ const styles = StyleSheet.create({
   progressLabel: {
     fontSize: fontSize.xs,
     color: colors.textMuted,
+  },
+  notesOnly: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    fontStyle: 'italic',
   },
 });

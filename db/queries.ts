@@ -18,6 +18,13 @@ export async function ensureDbReady(): Promise<SQLiteDatabase> {
   initializeDatabase(db);
   seedCurriculumData(db);
 
+  // Add video_url column if missing (migration for existing installs)
+  try {
+    db.runSync('ALTER TABLE practice_sessions ADD COLUMN video_url TEXT');
+  } catch {
+    // Column already exists — expected on fresh installs
+  }
+
   // Seed handwritten practice data (runs once, guarded by preference flag)
   const { seedPracticeData } = require('./seedPracticeData');
   seedPracticeData();
@@ -215,7 +222,7 @@ export function getAllSessions(): {
      LEFT JOIN attempts a ON a.session_segment_id = ss.id
      LEFT JOIN curriculum_items ci ON ci.id = a.curriculum_item_id
      GROUP BY ps.id
-     HAVING COUNT(a.id) > 0
+     HAVING COUNT(a.id) > 0 OR ps.notes IS NOT NULL OR ps.video_url IS NOT NULL
      ORDER BY ps.started_at DESC`,
   );
 }
@@ -271,6 +278,22 @@ export function updateSessionNotes(id: string, notes: string): void {
   getDb().runSync(
     'UPDATE practice_sessions SET notes = ? WHERE id = ?',
     notes || null,
+    id,
+  );
+}
+
+export function getSessionVideoUrl(id: string): string | null {
+  const row = getDb().getFirstSync<{ video_url: string | null }>(
+    'SELECT video_url FROM practice_sessions WHERE id = ?',
+    id,
+  );
+  return row?.video_url ?? null;
+}
+
+export function updateSessionVideoUrl(id: string, videoUrl: string): void {
+  getDb().runSync(
+    'UPDATE practice_sessions SET video_url = ? WHERE id = ?',
+    videoUrl || null,
     id,
   );
 }

@@ -16,6 +16,7 @@ export function initializeDatabase(db: SQLiteDatabase): void {
       started_at TEXT NOT NULL,
       ended_at TEXT,
       notes TEXT,
+      video_url TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 

@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import { OSTINATOS, type Ostinato } from '@/constants/curriculum';
 import type { AttemptRow, SessionSegmentRow } from '@/types';
 import { Badge } from '@/components/shared/Badge';
+import { VideoLinkCard, AddVideoButton } from '@/components/history/VideoLinkCard';
 import { colors, spacing, fontSize, borderRadius } from '@/constants/theme';
 
 interface SessionDetailProps {
@@ -16,8 +17,10 @@ interface SessionDetailProps {
   segments: SessionSegmentRow[];
   attempts: AttemptRow[];
   notes: string;
+  videoUrl: string;
   onDeleteSegment?: (segmentId: string) => void;
   onUpdateNotes?: (notes: string) => void;
+  onUpdateVideoUrl?: (url: string) => void;
 }
 
 function formatSegmentDuration(segment: SessionSegmentRow): string {
@@ -148,8 +151,10 @@ export function SessionDetail({
   segments,
   attempts,
   notes,
+  videoUrl,
   onDeleteSegment,
   onUpdateNotes,
+  onUpdateVideoUrl,
 }: SessionDetailProps) {
   const date = dayjs(startedAt).format('MMM D, YYYY');
   const [isEditingNotes, setIsEditingNotes] = useState(false);
@@ -234,6 +239,16 @@ export function SessionDetail({
             </Pressable>
           )}
         </RNView>
+
+        {/* Video link section */}
+        {videoUrl ? (
+          <VideoLinkCard
+            videoUrl={videoUrl}
+            onUpdateUrl={onUpdateVideoUrl}
+          />
+        ) : onUpdateVideoUrl ? (
+          <AddVideoButton onAdd={onUpdateVideoUrl} />
+        ) : null}
 
         {segments.map((segment) => (
           <SwipeableSegment

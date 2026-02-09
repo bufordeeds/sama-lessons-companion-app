@@ -10,6 +10,8 @@ import {
   getCurriculumItems,
   getSessionNotes,
   updateSessionNotes,
+  getSessionVideoUrl,
+  updateSessionVideoUrl,
   deleteSession,
   deleteSegment,
 } from '@/db/queries';
@@ -29,6 +31,7 @@ export default function SessionDetailScreen() {
   const [curriculumName, setCurriculumName] = useState('Practice');
   const [startedAt, setStartedAt] = useState('');
   const [notes, setNotes] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
 
   const loadData = useCallback(() => {
     if (!id) return;
@@ -41,6 +44,7 @@ export default function SessionDetailScreen() {
 
     setAttempts(getSessionAttemptsGrouped(id));
     setNotes(getSessionNotes(id) ?? '');
+    setVideoUrl(getSessionVideoUrl(id) ?? '');
 
     const curriculumId = getSessionCurriculumItemId(id);
     if (curriculumId) {
@@ -63,6 +67,12 @@ export default function SessionDetailScreen() {
     if (!id) return;
     updateSessionNotes(id, text);
     setNotes(text);
+  }, [id]);
+
+  const handleUpdateVideoUrl = useCallback((url: string) => {
+    if (!id) return;
+    updateSessionVideoUrl(id, url);
+    setVideoUrl(url);
   }, [id]);
 
   const handleContinue = () => {
@@ -110,8 +120,10 @@ export default function SessionDetailScreen() {
         segments={segments}
         attempts={attempts}
         notes={notes}
+        videoUrl={videoUrl}
         onDeleteSegment={handleDeleteSegment}
         onUpdateNotes={handleUpdateNotes}
+        onUpdateVideoUrl={handleUpdateVideoUrl}
       />
       <RNView style={styles.actionBar}>
         {canContinue && (

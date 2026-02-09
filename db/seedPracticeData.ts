@@ -7,11 +7,12 @@ import {
 	endSegment,
 	endSession,
 	getPreference,
-	setPreference
+	setPreference,
+	updateSessionNotes,
+	updateSessionVideoUrl
 } from './queries';
 
-const SEED_KEY = 'practice_data_seeded_v3';
-const CURRICULUM_ID = 'rhythm-series-2';
+const SEED_KEY = 'practice_data_seeded_v4';
 
 interface AttemptData {
 	ostinato: Ostinato;
@@ -26,10 +27,30 @@ interface SegmentData {
 	attempts: AttemptData[];
 }
 
-// Handwritten notes: 1 session with 4 segments — Rhythm Series 2, Feb 8
-const SEGMENTS: SegmentData[] = [
+// ── Session 1: Walking Beat lesson — May 22, 2025 ──────────────────
+// No ostinatos — fundamentals lesson getting comfortable with the walking beat:
+// Kick on downbeats, hi-hat pedal on upbeats.
+// 4 sixteenth notes on snare + 3 toms per beat for 4 bars, ending with crash on 1.
+
+const WALKING_BEAT_NOTES =
+	'2nd lesson ever. Walking beat fundamentals — kick on downbeats, hi-hat pedal on upbeats. ' +
+	'4 sixteenth notes on snare and 3 toms per beat, 4 bars, crash on 1.\n\n' +
+	'Teacher notes: Don\'t play faster than you can think. Go slow — "Napoleon said go slow because I\'m in a hurry." ' +
+	'Weakest point is rushing. Be patient, go step by step. ' +
+	'Hi-hat is independent — that\'s the work we\'re doing. ' +
+	'Practice removing left hand then right hand from 16th note groups to build independence.';
+
+const WALKING_BEAT_VIDEO = 'https://youtu.be/6NwNpBGLVKA?si=i-rdTqST8xcIaeHY';
+
+// ── Session 2: Rhythm Series 2 — Feb 8, 2026 ───────────────────────
+
+const RS2_NOTES =
+	'Let the ostinatos flow. Focus should be mainly on reading properly. ' +
+	'Since these notes are easy to read, your mind should remain calm while doing the exercises. ' +
+	'Struggled with 4A ostinato — need to focus on improving consistency and endurance for longer segments.';
+
+const RS2_SEGMENTS: SegmentData[] = [
 	// Segment 1 — 9:00–9:30 AM
-	// lets add this note in future seed data for 02/08/2026: "This segment was a bit rough, with a few more mistakes than usual. I struggled with the 4A ostinato, especially towards the end. I think I was getting tired by then. The 1B and 2B attempts were better, but I still had some trouble with the 4B ostinato. Overall, it was a good practice session, but I need to focus on improving my consistency and endurance for the longer segments."Remember. Let the ostinattos flow. Your focus should be mainly on reading properly. And since these notes are easy to read, your mind should remain calm while doing the exercises.
 	{
 		startedAt: '2026-02-08T09:00:00.000Z',
 		endedAt: '2026-02-08T09:30:00.000Z',
@@ -106,23 +127,38 @@ export function seedPracticeData(): void {
 	// Only seed once
 	if (getPreference(SEED_KEY) === 'true') return;
 
-	const sessionId = randomUUID();
-	const sessionStartedAt = SEGMENTS[0].startedAt;
-	const sessionEndedAt = SEGMENTS[SEGMENTS.length - 1].endedAt;
+	// ── Session 1: Walking Beat — May 22, 2025 ──
+	// Fundamentals lesson, no ostinato attempts — just notes + video
+	const walkingId = randomUUID();
+	const walkingStart = '2025-05-22T15:00:00.000Z';
+	const walkingEnd = '2025-05-22T15:30:00.000Z';
 
-	createSession(sessionId, sessionStartedAt);
+	createSession(walkingId, walkingStart);
+	const walkingSegId = randomUUID();
+	createSegment(walkingSegId, walkingId, 1, walkingStart);
+	endSegment(walkingSegId, walkingEnd);
+	endSession(walkingId, walkingEnd);
+	updateSessionNotes(walkingId, WALKING_BEAT_NOTES);
+	updateSessionVideoUrl(walkingId, WALKING_BEAT_VIDEO);
 
-	for (let s = 0; s < SEGMENTS.length; s++) {
-		const seg = SEGMENTS[s];
+	// ── Session 2: Rhythm Series 2 — Feb 8, 2026 ──
+	const rs2Id = randomUUID();
+	const rs2StartedAt = RS2_SEGMENTS[0].startedAt;
+	const rs2EndedAt = RS2_SEGMENTS[RS2_SEGMENTS.length - 1].endedAt;
+
+	createSession(rs2Id, rs2StartedAt);
+
+	for (let s = 0; s < RS2_SEGMENTS.length; s++) {
+		const seg = RS2_SEGMENTS[s];
 		const segmentId = randomUUID();
 
-		createSegment(segmentId, sessionId, s + 1, seg.startedAt);
+		createSegment(segmentId, rs2Id, s + 1, seg.startedAt);
 
 		for (const a of seg.attempts) {
 			createAttempt(
 				randomUUID(),
 				segmentId,
-				CURRICULUM_ID,
+				'rhythm-series-2',
 				a.ostinato,
 				a.tempo,
 				a.mistakes,
@@ -133,6 +169,8 @@ export function seedPracticeData(): void {
 		endSegment(segmentId, seg.endedAt);
 	}
 
-	endSession(sessionId, sessionEndedAt);
+	endSession(rs2Id, rs2EndedAt);
+	updateSessionNotes(rs2Id, RS2_NOTES);
+
 	setPreference(SEED_KEY, 'true');
 }
