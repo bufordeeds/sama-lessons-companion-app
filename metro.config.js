@@ -4,6 +4,6 @@ const { getDefaultConfig } = require('expo/metro-config');
 const config = getDefaultConfig(__dirname);
 
 // Bundle .mxl (compressed MusicXML) and .bundle (OSMD JS) files as assets
-config.resolver.assetExts.push('mxl', 'bundle');
+config.resolver.assetExts.push('mxl', 'musicxml', 'bundle');
 
 module.exports = config;

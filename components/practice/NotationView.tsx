@@ -7,7 +7,7 @@ import { File } from 'expo-file-system';
 import { colors, spacing, fontSize } from '@/constants/theme';
 
 interface NotationViewProps {
-  /** The require() asset ID for the .mxl file */
+  /** The require() asset ID for the .musicxml file */
   mxlAsset: number;
 }
 
@@ -32,155 +32,104 @@ async function getOsmdJs(): Promise<string> {
   return cachedOsmdJs;
 }
 
-async function getMxlBase64(mxlAsset: number): Promise<string> {
+async function getMusicXml(mxlAsset: number): Promise<string> {
   const asset = Asset.fromModule(mxlAsset);
   await asset.downloadAsync();
-  if (!asset.localUri) throw new Error('Failed to download MXL asset');
+  if (!asset.localUri) throw new Error('Failed to download MusicXML asset');
   const file = new File(uriToPath(asset.localUri));
-  return await file.base64();
+  return await file.text();
 }
 
 function buildHtml(osmdJs: string): string {
-  return `<!DOCTYPE html>
-<html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: ${colors.background};
-      overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    #notation {
-      width: 100%;
-      padding: 8px;
-    }
-    #loading {
-      color: ${colors.textMuted};
-      text-align: center;
-      padding: 40px 20px;
-      font-family: -apple-system, system-ui, sans-serif;
-      font-size: 14px;
-    }
-    #error {
-      color: #EF5350;
-      text-align: center;
-      padding: 40px 20px;
-      font-family: -apple-system, system-ui, sans-serif;
-      font-size: 14px;
-      display: none;
-    }
-    /* Make SVG notation readable on dark background */
-    svg text { fill: ${colors.text} !important; }
-    svg line, svg path { stroke: ${colors.text} !important; }
-    svg rect.vf-stave-section { fill: none !important; }
-  </style>
-  <script>${osmdJs}</script>
-</head>
-<body>
-  <div id="loading">Loading notation...</div>
-  <div id="error"></div>
-  <div id="notation"></div>
-  <script>
-    var osmd = null;
-
-    function sendEvent(event) {
-      window.ReactNativeWebView.postMessage(JSON.stringify(event));
-    }
-
-    function initOsmd() {
-      try {
-        osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay("notation", {
-          backend: "svg",
-          drawTitle: false,
-          drawSubtitle: false,
-          drawComposer: false,
-          drawCredits: false,
-          drawPartNames: false,
-          drawPartAbbreviations: false,
-          autoResize: true,
-          drawingParameters: "compact",
-          coloringEnabled: false,
-        });
-        sendEvent({ type: "ready" });
-      } catch (e) {
-        document.getElementById("error").style.display = "block";
-        document.getElementById("error").textContent = "Failed to initialize: " + e.message;
-        document.getElementById("loading").style.display = "none";
-        sendEvent({ type: "error", message: e.message });
-      }
-    }
-
-    // Listen for commands from React Native
-    window.addEventListener("message", function(event) {
-      try {
-        var cmd = JSON.parse(event.data);
-        if (cmd.type === "load" && osmd) {
-          // Decode base64 MXL data to ArrayBuffer
-          var binary = atob(cmd.data);
-          var bytes = new Uint8Array(binary.length);
-          for (var i = 0; i < binary.length; i++) {
-            bytes[i] = binary.charCodeAt(i);
-          }
-
-          osmd.load(bytes.buffer).then(function() {
-            osmd.render();
-            document.getElementById("loading").style.display = "none";
-
-            // Apply dark theme to SVG elements
-            var svgs = document.querySelectorAll("svg");
-            svgs.forEach(function(svg) {
-              svg.style.filter = "invert(1) hue-rotate(180deg)";
-            });
-
-            sendEvent({
-              type: "loaded",
-              measureCount: osmd.sheet ? osmd.sheet.sourceMeasures.length : 0,
-            });
-          }).catch(function(e) {
-            document.getElementById("error").style.display = "block";
-            document.getElementById("error").textContent = "Failed to load: " + e.message;
-            document.getElementById("loading").style.display = "none";
-            sendEvent({ type: "error", message: e.message });
-          });
-        }
-      } catch (e) {
-        // Ignore parse errors from non-JSON messages
-      }
-    });
-
-    // Also handle document-level message event for iOS WebView
-    document.addEventListener("message", function(event) {
-      window.dispatchEvent(new MessageEvent("message", { data: event.data }));
-    });
-
-    initOsmd();
-  </script>
-</body>
-</html>`;
+  // IMPORTANT: Use string concatenation, NOT template literals, because
+  // the OSMD JS source contains backtick template literals that would
+  // break an outer template literal.
+  return '<!DOCTYPE html>\n<html>\n<head>\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">\n' +
+    '<style>\n' +
+    '* { margin: 0; padding: 0; box-sizing: border-box; }\n' +
+    'body { background: ' + colors.background + '; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; }\n' +
+    '#notation { width: 100%; padding: 8px; }\n' +
+    '#loading { color: ' + colors.textMuted + '; text-align: center; padding: 40px 20px; font-family: -apple-system, system-ui, sans-serif; font-size: 14px; }\n' +
+    '#error { color: #EF5350; text-align: center; padding: 40px 20px; font-family: -apple-system, system-ui, sans-serif; font-size: 14px; display: none; }\n' +
+    'svg text { fill: ' + colors.text + ' !important; }\n' +
+    'svg line, svg path { stroke: ' + colors.text + ' !important; }\n' +
+    'svg rect.vf-stave-section { fill: none !important; }\n' +
+    '</style>\n' +
+    '<script>' + osmdJs + '<\/script>\n' +
+    '</head>\n<body>\n' +
+    '<div id="loading">Loading notation...</div>\n' +
+    '<div id="error"></div>\n' +
+    '<div id="notation"></div>\n' +
+    '<script>\n' +
+    'var osmd = null;\n' +
+    'function sendEvent(event) { window.ReactNativeWebView.postMessage(JSON.stringify(event)); }\n' +
+    '\n' +
+    'function initOsmd() {\n' +
+    '  try {\n' +
+    '    osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay("notation", {\n' +
+    '      backend: "svg", drawTitle: false, drawSubtitle: false,\n' +
+    '      drawComposer: false, drawCredits: false, drawPartNames: false,\n' +
+    '      drawPartAbbreviations: false, autoResize: true,\n' +
+    '      drawingParameters: "compact", coloringEnabled: false\n' +
+    '    });\n' +
+    '    sendEvent({ type: "ready" });\n' +
+    '  } catch (e) {\n' +
+    '    document.getElementById("error").style.display = "block";\n' +
+    '    document.getElementById("error").textContent = "Failed to initialize: " + e.message;\n' +
+    '    document.getElementById("loading").style.display = "none";\n' +
+    '    sendEvent({ type: "error", message: e.message });\n' +
+    '  }\n' +
+    '}\n' +
+    '\n' +
+    'window.addEventListener("message", function(event) {\n' +
+    '  try {\n' +
+    '    var cmd = JSON.parse(event.data);\n' +
+    '    if (cmd.type === "load" && osmd) {\n' +
+    '      osmd.load(cmd.data).then(function() {\n' +
+    '        osmd.render();\n' +
+    '        document.getElementById("loading").style.display = "none";\n' +
+    '        var svgs = document.querySelectorAll("svg");\n' +
+    '        svgs.forEach(function(svg) { svg.style.filter = "invert(1) hue-rotate(180deg)"; });\n' +
+    '        sendEvent({ type: "loaded", measureCount: osmd.sheet ? osmd.sheet.sourceMeasures.length : 0 });\n' +
+    '      }).catch(function(e) {\n' +
+    '        document.getElementById("error").style.display = "block";\n' +
+    '        document.getElementById("error").textContent = "Failed to load: " + e.message;\n' +
+    '        document.getElementById("loading").style.display = "none";\n' +
+    '        sendEvent({ type: "error", message: e.message });\n' +
+    '      });\n' +
+    '    }\n' +
+    '  } catch (e) {}\n' +
+    '});\n' +
+    '\n' +
+    'document.addEventListener("message", function(event) {\n' +
+    '  window.dispatchEvent(new MessageEvent("message", { data: event.data }));\n' +
+    '});\n' +
+    '\n' +
+    'initOsmd();\n' +
+    '<\/script>\n' +
+    '</body>\n</html>';
 }
 
 export function NotationView({ mxlAsset }: NotationViewProps) {
   const [html, setHtml] = useState<string | null>(null);
-  const [mxlData, setMxlData] = useState<string | null>(null);
+  const [xmlData, setXmlData] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [webViewReady, setWebViewReady] = useState(false);
   const webViewRef = React.useRef<WebView>(null);
 
-  // Load OSMD JS and build HTML
+  // Load OSMD JS and MusicXML
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [osmdJs, base64] = await Promise.all([
+        const [osmdJs, xml] = await Promise.all([
           getOsmdJs(),
-          getMxlBase64(mxlAsset),
+          getMusicXml(mxlAsset),
         ]);
         if (cancelled) return;
         setHtml(buildHtml(osmdJs));
-        setMxlData(base64);
+        setXmlData(xml);
       } catch (e) {
         if (cancelled) return;
         setError(e instanceof Error ? e.message : 'Failed to load assets');
@@ -189,14 +138,14 @@ export function NotationView({ mxlAsset }: NotationViewProps) {
     return () => { cancelled = true; };
   }, [mxlAsset]);
 
-  // Send MXL data to WebView once it's ready
+  // Send MusicXML to WebView once it's ready
   useEffect(() => {
-    if (webViewReady && mxlData && webViewRef.current) {
+    if (webViewReady && xmlData && webViewRef.current) {
       webViewRef.current.postMessage(
-        JSON.stringify({ type: 'load', data: mxlData }),
+        JSON.stringify({ type: 'load', data: xmlData }),
       );
     }
-  }, [webViewReady, mxlData]);
+  }, [webViewReady, xmlData]);
 
   const handleMessage = (event: { nativeEvent: { data: string } }) => {
     try {

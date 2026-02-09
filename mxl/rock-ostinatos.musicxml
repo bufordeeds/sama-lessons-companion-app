@@ -1,0 +1,1566 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<score-partwise version="4.0">
+  <work>
+    <work-title>Untitled score</work-title>
+    </work>
+  <identification>
+    <creator type="composer">Composer / arranger</creator>
+    <encoding>
+      <software>MuseScore Studio 4.6.5</software>
+      <encoding-date>2026-02-08</encoding-date>
+      <supports element="accidental" type="yes"/>
+      <supports element="beam" type="yes"/>
+      <supports element="print" attribute="new-page" type="yes" value="yes"/>
+      <supports element="print" attribute="new-system" type="yes" value="yes"/>
+      <supports element="stem" type="yes"/>
+      </encoding>
+    <miscellaneous>
+      <miscellaneous-field name="creationDate">2026-02-08</miscellaneous-field>
+      <miscellaneous-field name="platform">Apple Macintosh</miscellaneous-field>
+      <miscellaneous-field name="subtitle">Subtitle</miscellaneous-field>
+      </miscellaneous>
+    </identification>
+  <defaults>
+    <scaling>
+      <millimeters>12.9032</millimeters>
+      <tenths>40</tenths>
+      </scaling>
+    <page-layout>
+      <page-height>866.142</page-height>
+      <page-width>669.291</page-width>
+      <page-margins type="both">
+        <left-margin>30.7087</left-margin>
+        <right-margin>30.7087</right-margin>
+        <top-margin>30.7087</top-margin>
+        <bottom-margin>0</bottom-margin>
+        </page-margins>
+      </page-layout>
+    <appearance>
+      <line-width type="light barline">1.8</line-width>
+      <line-width type="heavy barline">5.5</line-width>
+      <line-width type="beam">5</line-width>
+      <line-width type="bracket">4.5</line-width>
+      <line-width type="dashes">1</line-width>
+      <line-width type="enclosure">1</line-width>
+      <line-width type="ending">1.1</line-width>
+      <line-width type="extend">1</line-width>
+      <line-width type="leger">1.6</line-width>
+      <line-width type="pedal">1.1</line-width>
+      <line-width type="octave shift">1.1</line-width>
+      <line-width type="slur middle">2.1</line-width>
+      <line-width type="slur tip">0.5</line-width>
+      <line-width type="staff">1.1</line-width>
+      <line-width type="stem">1</line-width>
+      <line-width type="tie middle">2.1</line-width>
+      <line-width type="tie tip">0.5</line-width>
+      <line-width type="tuplet bracket">1</line-width>
+      <line-width type="wedge">1.2</line-width>
+      <note-size type="cue">70</note-size>
+      <note-size type="grace">70</note-size>
+      <note-size type="grace-cue">49</note-size>
+      </appearance>
+    <music-font font-family="Leland"/>
+    <word-font font-family="Edwin" font-size="10"/>
+    <lyric-font font-family="Edwin" font-size="10"/>
+    </defaults>
+  <credit page="1">
+    <credit-type>title</credit-type>
+    <credit-words default-x="334.645669" default-y="835.433071" justify="center" valign="top" font-size="22">Rock Ostinatos</credit-words>
+    </credit>
+  <credit page="1">
+    <credit-type>composer</credit-type>
+    <credit-words default-x="638.582677" default-y="781.189851" justify="right" valign="bottom">AV</credit-words>
+    </credit>
+  <part-list>
+    <score-part id="P1">
+      <part-name>Drum Kit</part-name>
+      <part-abbreviation>D. Kit</part-abbreviation>
+      <score-instrument id="P1-I36">
+        <instrument-name>Bass Drum 2</instrument-name>
+        </score-instrument>
+      <score-instrument id="P1-I37">
+        <instrument-name>Bass Drum</instrument-name>
+        </score-instrument>
+      <score-instrument id="P1-I38">
+        <instrument-name>Cross-stick</instrument-name>
+        </score-instrument>
+      <score-instrument id="P1-I39">
+        <instrument-name>Snare</instrument-name>
+        </score-instrument>
+      <score-instrument id="P1-I42">
+        <instrument-name>Floor Tom</instrument-name>
+        </score-instrument>
+      <score-instrument id="P1-I43">
+        <instrument-name>Closed Hi-Hat</instrument-name>
+        </score-instrument>
+      <score-instrument id="P1-I45">
+        <instrument-name>Pedal Hi-Hat</instrument-name>
+        </score-instrument>
+      <score-instrument id="P1-I47">
+        <instrument-name>Open Hi-Hat</instrument-name>
+        </score-instrument>
+      <score-instrument id="P1-I48">
+        <instrument-name>Low Tom</instrument-name>
+        </score-instrument>
+      <score-instrument id="P1-I50">
+        <instrument-name>Crash Cymbal</instrument-name>
+        </score-instrument>
+      <score-instrument id="P1-I51">
+        <instrument-name>High Tom</instrument-name>
+        </score-instrument>
+      <score-instrument id="P1-I52">
+        <instrument-name>Ride Cymbal</instrument-name>
+        </score-instrument>
+      <score-instrument id="P1-I53">
+        <instrument-name>China Cymbal</instrument-name>
+        </score-instrument>
+      <score-instrument id="P1-I54">
+        <instrument-name>Ride Bell</instrument-name>
+        </score-instrument>
+      <score-instrument id="P1-I56">
+        <instrument-name>Splash Cymbal</instrument-name>
+        </score-instrument>
+      <score-instrument id="P1-I58">
+        <instrument-name>Crash Cymbal 2</instrument-name>
+        </score-instrument>
+      <midi-device port="1"></midi-device>
+      <midi-instrument id="P1-I36">
+        <midi-channel>10</midi-channel>
+        <midi-program>1</midi-program>
+        <midi-unpitched>36</midi-unpitched>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      <midi-instrument id="P1-I37">
+        <midi-channel>10</midi-channel>
+        <midi-program>1</midi-program>
+        <midi-unpitched>37</midi-unpitched>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      <midi-instrument id="P1-I38">
+        <midi-channel>10</midi-channel>
+        <midi-program>1</midi-program>
+        <midi-unpitched>38</midi-unpitched>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      <midi-instrument id="P1-I39">
+        <midi-channel>10</midi-channel>
+        <midi-program>1</midi-program>
+        <midi-unpitched>39</midi-unpitched>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      <midi-instrument id="P1-I42">
+        <midi-channel>10</midi-channel>
+        <midi-program>1</midi-program>
+        <midi-unpitched>42</midi-unpitched>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      <midi-instrument id="P1-I43">
+        <midi-channel>10</midi-channel>
+        <midi-program>1</midi-program>
+        <midi-unpitched>43</midi-unpitched>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      <midi-instrument id="P1-I45">
+        <midi-channel>10</midi-channel>
+        <midi-program>1</midi-program>
+        <midi-unpitched>45</midi-unpitched>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      <midi-instrument id="P1-I47">
+        <midi-channel>10</midi-channel>
+        <midi-program>1</midi-program>
+        <midi-unpitched>47</midi-unpitched>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      <midi-instrument id="P1-I48">
+        <midi-channel>10</midi-channel>
+        <midi-program>1</midi-program>
+        <midi-unpitched>48</midi-unpitched>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      <midi-instrument id="P1-I50">
+        <midi-channel>10</midi-channel>
+        <midi-program>1</midi-program>
+        <midi-unpitched>50</midi-unpitched>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      <midi-instrument id="P1-I51">
+        <midi-channel>10</midi-channel>
+        <midi-program>1</midi-program>
+        <midi-unpitched>51</midi-unpitched>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      <midi-instrument id="P1-I52">
+        <midi-channel>10</midi-channel>
+        <midi-program>1</midi-program>
+        <midi-unpitched>52</midi-unpitched>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      <midi-instrument id="P1-I53">
+        <midi-channel>10</midi-channel>
+        <midi-program>1</midi-program>
+        <midi-unpitched>53</midi-unpitched>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      <midi-instrument id="P1-I54">
+        <midi-channel>10</midi-channel>
+        <midi-program>1</midi-program>
+        <midi-unpitched>54</midi-unpitched>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      <midi-instrument id="P1-I56">
+        <midi-channel>10</midi-channel>
+        <midi-program>1</midi-program>
+        <midi-unpitched>56</midi-unpitched>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      <midi-instrument id="P1-I58">
+        <midi-channel>10</midi-channel>
+        <midi-program>1</midi-program>
+        <midi-unpitched>58</midi-unpitched>
+        <volume>78.7402</volume>
+        <pan>0</pan>
+        </midi-instrument>
+      </score-part>
+    </part-list>
+  <part id="P1">
+    <measure number="1" width="416.09">
+      <print>
+        <system-layout>
+          <system-margins>
+            <left-margin>50</left-margin>
+            <right-margin>0</right-margin>
+            </system-margins>
+          <top-system-distance>97.59</top-system-distance>
+          </system-layout>
+        </print>
+      <barline location="left">
+        <bar-style>heavy-light</bar-style>
+        <repeat direction="forward"/>
+        </barline>
+      <attributes>
+        <divisions>2</divisions>
+        <key>
+          <fifths>0</fifths>
+          <mode>none</mode>
+          </key>
+        <time>
+          <beats>4</beats>
+          <beat-type>4</beat-type>
+          </time>
+        <clef>
+          <sign>percussion</sign>
+          </clef>
+        </attributes>
+      <direction placement="above">
+        <direction-type>
+          <words relative-x="-28.76" relative-y="10.25">0</words>
+          </direction-type>
+        </direction>
+      <note default-x="95.05" default-y="5">
+        <unpitched>
+          <display-step>G</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I43"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">begin</beam>
+        </note>
+      <note default-x="132.82" default-y="5">
+        <unpitched>
+          <display-step>G</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I43"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="170.6" default-y="5">
+        <unpitched>
+          <display-step>G</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I43"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="208.37" default-y="5">
+        <unpitched>
+          <display-step>G</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I43"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">end</beam>
+        </note>
+      <note default-x="246.14" default-y="5">
+        <unpitched>
+          <display-step>G</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I43"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">begin</beam>
+        </note>
+      <note default-x="283.91" default-y="5">
+        <unpitched>
+          <display-step>G</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I43"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="321.69" default-y="5">
+        <unpitched>
+          <display-step>G</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I43"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <direction placement="above">
+        <direction-type>
+          <words relative-x="31.6" relative-y="9.8" font-size="6">HH (closed) RH</words>
+          </direction-type>
+        </direction>
+      <note default-x="359.46" default-y="5">
+        <unpitched>
+          <display-step>G</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I43"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">end</beam>
+        </note>
+      <barline location="right">
+        <bar-style>light-heavy</bar-style>
+        <repeat direction="backward"/>
+        </barline>
+      </measure>
+    <measure number="2" width="141.78">
+      <note default-x="63.5" default-y="-10">
+        <rest measure="yes"/>
+        <duration>8</duration>
+        <voice>1</voice>
+        </note>
+      </measure>
+    <measure number="3" width="443.45">
+      <print new-system="yes">
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+            </system-margins>
+          <system-distance>85.57</system-distance>
+          </system-layout>
+        </print>
+      <barline location="left">
+        <bar-style>heavy-light</bar-style>
+        <repeat direction="forward"/>
+        </barline>
+      <direction placement="above">
+        <direction-type>
+          <words relative-x="-35.44" relative-y="8.23">1</words>
+          </direction-type>
+        </direction>
+      <note default-x="68.73" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">begin</beam>
+        </note>
+      <note default-x="113.21" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="157.7" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="202.18" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">end</beam>
+        </note>
+      <note default-x="246.66" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">begin</beam>
+        </note>
+      <note default-x="291.14" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="335.63" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <direction placement="above">
+        <direction-type>
+          <words relative-x="21.29" relative-y="11.73" font-size="6">Ride (RH)</words>
+          </direction-type>
+        </direction>
+      <direction placement="below">
+        <direction-type>
+          <words default-y="-40" relative-x="3.98" relative-y="-25.07" font-size="6">HH (LF)</words>
+          </direction-type>
+        </direction>
+      <note default-x="380.11" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">end</beam>
+        </note>
+      <backup>
+        <duration>8</duration>
+        </backup>
+      <note default-x="68.73" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>2</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>quarter</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        </note>
+      <note default-x="157.7" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>2</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>quarter</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        </note>
+      <note default-x="246.66" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>2</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>quarter</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        </note>
+      <note default-x="335.63" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>2</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>quarter</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        </note>
+      <barline location="right">
+        <bar-style>light-heavy</bar-style>
+        <repeat direction="backward"/>
+        </barline>
+      </measure>
+    <measure number="4" width="164.43">
+      <note default-x="74.82" default-y="-10">
+        <rest measure="yes"/>
+        <duration>8</duration>
+        <voice>1</voice>
+        </note>
+      </measure>
+    <measure number="5" width="443.45">
+      <print new-system="yes">
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+            </system-margins>
+          <system-distance>85.57</system-distance>
+          </system-layout>
+        </print>
+      <barline location="left">
+        <bar-style>heavy-light</bar-style>
+        <repeat direction="forward"/>
+        </barline>
+      <direction placement="above">
+        <direction-type>
+          <words relative-x="-35.9" relative-y="4.9">2</words>
+          </direction-type>
+        </direction>
+      <note default-x="68.73" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">begin</beam>
+        </note>
+      <note default-x="113.21" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="157.7" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="202.18" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">end</beam>
+        </note>
+      <note default-x="246.66" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">begin</beam>
+        </note>
+      <note default-x="291.14" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="335.63" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <direction placement="above">
+        <direction-type>
+          <words relative-x="21.91" relative-y="4.69" font-size="6">Ride (RH)</words>
+          </direction-type>
+        </direction>
+      <direction placement="below">
+        <direction-type>
+          <words default-y="-40.02" relative-x="23.96" relative-y="-13.54" font-size="6">HH (LF)</words>
+          </direction-type>
+        </direction>
+      <note default-x="380.11" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">end</beam>
+        </note>
+      <backup>
+        <duration>8</duration>
+        </backup>
+      <forward>
+        <duration>1</duration>
+        </forward>
+      <note default-x="113.21" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        </note>
+      <forward>
+        <duration>1</duration>
+        </forward>
+      <note default-x="202.18" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        </note>
+      <forward>
+        <duration>1</duration>
+        </forward>
+      <note default-x="291.14" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        </note>
+      <forward>
+        <duration>1</duration>
+        </forward>
+      <note default-x="380.11" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        </note>
+      <barline location="right">
+        <bar-style>light-heavy</bar-style>
+        <repeat direction="backward"/>
+        </barline>
+      </measure>
+    <measure number="6" width="164.43">
+      <note default-x="74.82" default-y="-10">
+        <rest measure="yes"/>
+        <duration>8</duration>
+        <voice>1</voice>
+        </note>
+      </measure>
+    <measure number="7" width="443.45">
+      <print new-system="yes">
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+            </system-margins>
+          <system-distance>85.57</system-distance>
+          </system-layout>
+        </print>
+      <barline location="left">
+        <bar-style>heavy-light</bar-style>
+        <repeat direction="forward"/>
+        </barline>
+      <direction placement="above">
+        <direction-type>
+          <words default-y="0.23" relative-x="-35.9" relative-y="4.9">2.5</words>
+          </direction-type>
+        </direction>
+      <note default-x="68.73" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">begin</beam>
+        </note>
+      <note default-x="113.21" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="157.7" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="202.18" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">end</beam>
+        </note>
+      <note default-x="246.66" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">begin</beam>
+        </note>
+      <note default-x="291.14" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="335.63" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <direction placement="below">
+        <direction-type>
+          <words default-y="-40" relative-x="23.03" relative-y="-17.36" font-size="6">HH (LF)</words>
+          </direction-type>
+        </direction>
+      <direction placement="above">
+        <direction-type>
+          <words relative-x="25.16" relative-y="7.32" font-size="6">Ride (RH)</words>
+          </direction-type>
+        </direction>
+      <note default-x="380.11" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        <beam number="1">end</beam>
+        </note>
+      <backup>
+        <duration>8</duration>
+        </backup>
+      <note default-x="68.73" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">begin</beam>
+        </note>
+      <note default-x="113.21" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="157.7" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="202.18" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">end</beam>
+        </note>
+      <note default-x="246.66" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">begin</beam>
+        </note>
+      <note default-x="291.14" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="335.63" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="380.11" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">end</beam>
+        </note>
+      <barline location="right">
+        <bar-style>light-heavy</bar-style>
+        <repeat direction="backward"/>
+        </barline>
+      </measure>
+    <measure number="8" width="164.43">
+      <note default-x="74.82" default-y="-10">
+        <rest measure="yes"/>
+        <duration>8</duration>
+        <voice>1</voice>
+        </note>
+      </measure>
+    <measure number="9" width="443.45">
+      <print new-system="yes">
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+            </system-margins>
+          <system-distance>85.57</system-distance>
+          </system-layout>
+        </print>
+      <barline location="left">
+        <bar-style>heavy-light</bar-style>
+        <repeat direction="forward"/>
+        </barline>
+      <direction placement="above">
+        <direction-type>
+          <words default-y="0.23" relative-x="-35.9" relative-y="4.9">3</words>
+          </direction-type>
+        </direction>
+      <note default-x="68.73" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>2</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        </note>
+      <note default-x="157.7" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>2</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        </note>
+      <note default-x="246.66" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>2</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        </note>
+      <note default-x="335.63" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>2</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        </note>
+      <backup>
+        <duration>8</duration>
+        </backup>
+      <note default-x="68.73" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">begin</beam>
+        </note>
+      <note default-x="113.21" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="157.7" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="202.18" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">end</beam>
+        </note>
+      <note default-x="246.66" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">begin</beam>
+        </note>
+      <note default-x="291.14" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="335.63" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <direction placement="above">
+        <direction-type>
+          <words relative-x="2.16" relative-y="8.64" font-size="6">Ride (RH)</words>
+          </direction-type>
+        </direction>
+      <direction placement="below">
+        <direction-type>
+          <words default-y="-40" relative-x="23.03" relative-y="-14.72" font-size="6">HH (LF)</words>
+          </direction-type>
+        </direction>
+      <note default-x="380.11" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">end</beam>
+        </note>
+      <barline location="right">
+        <bar-style>light-heavy</bar-style>
+        <repeat direction="backward"/>
+        </barline>
+      </measure>
+    <measure number="10" width="164.43">
+      <note default-x="74.82" default-y="-10">
+        <rest measure="yes"/>
+        <duration>8</duration>
+        <voice>1</voice>
+        </note>
+      </measure>
+    <measure number="11" width="304.85">
+      <print new-system="yes">
+        <system-layout>
+          <system-margins>
+            <left-margin>0</left-margin>
+            <right-margin>0</right-margin>
+            </system-margins>
+          <system-distance>85.57</system-distance>
+          </system-layout>
+        </print>
+      <barline location="left">
+        <bar-style>heavy-light</bar-style>
+        <repeat direction="forward"/>
+        </barline>
+      <direction placement="above">
+        <direction-type>
+          <words relative-x="-35.9" relative-y="4.9">4</words>
+          </direction-type>
+        </direction>
+      <note default-x="68.73" default-y="-10">
+        <rest/>
+        <duration>1</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        </note>
+      <note default-x="94.36" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        </note>
+      <note default-x="121.42" default-y="-10">
+        <rest/>
+        <duration>1</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        </note>
+      <note default-x="147.05" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        </note>
+      <note default-x="174.11" default-y="-10">
+        <rest/>
+        <duration>1</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        </note>
+      <note default-x="199.74" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        </note>
+      <note default-x="226.8" default-y="-10">
+        <rest/>
+        <duration>1</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        </note>
+      <direction placement="above">
+        <direction-type>
+          <words relative-x="32.45" relative-y="5.55" font-size="6">Ride (RH)</words>
+          </direction-type>
+        </direction>
+      <direction placement="below">
+        <direction-type>
+          <words default-y="-40" relative-x="23.03" relative-y="-14.72" font-size="6">HH (LF)</words>
+          </direction-type>
+        </direction>
+      <note default-x="252.43" default-y="0">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I52"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notehead>x</notehead>
+        </note>
+      <backup>
+        <duration>8</duration>
+        </backup>
+      <note default-x="68.73" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">begin</beam>
+        </note>
+      <note default-x="94.36" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="121.42" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="147.05" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">end</beam>
+        </note>
+      <note default-x="174.11" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">begin</beam>
+        </note>
+      <note default-x="199.74" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="226.8" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">continue</beam>
+        </note>
+      <note default-x="252.43" default-y="-45">
+        <unpitched>
+          <display-step>D</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>1</duration>
+        <instrument id="P1-I45"/>
+        <voice>2</voice>
+        <type>eighth</type>
+        <stem>down</stem>
+        <notehead>x</notehead>
+        <beam number="1">end</beam>
+        </note>
+      <barline location="right">
+        <bar-style>light-heavy</bar-style>
+        <repeat direction="backward"/>
+        </barline>
+      </measure>
+    <measure number="12" width="99.01">
+      <note default-x="43.01" default-y="-10">
+        <rest measure="yes"/>
+        <duration>8</duration>
+        <voice>1</voice>
+        </note>
+      </measure>
+    <measure number="13" width="204.01">
+      <barline location="left">
+        <bar-style>heavy-light</bar-style>
+        <repeat direction="forward"/>
+        </barline>
+      <direction placement="above">
+        <direction-type>
+          <words default-y="5.79" relative-x="-35.9" relative-y="4.9">Beat 0</words>
+          </direction-type>
+        </direction>
+      <direction placement="below">
+        <direction-type>
+          <words default-y="-40" relative-x="-8.57" relative-y="-36.46" font-size="6">Bass (RF)</words>
+          </direction-type>
+        </direction>
+      <note default-x="31.36" default-y="-10">
+        <rest/>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        </note>
+      <direction placement="above">
+        <direction-type>
+          <words relative-x="-2.03" relative-y="20.18" font-size="6">Snare (LH)</words>
+          </direction-type>
+        </direction>
+      <note default-x="69.81" default-y="-15">
+        <unpitched>
+          <display-step>C</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>2</duration>
+        <instrument id="P1-I39"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <stem>up</stem>
+        </note>
+      <note default-x="108.26" default-y="-10">
+        <rest/>
+        <duration>2</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        </note>
+      <note default-x="146.71" default-y="-15">
+        <unpitched>
+          <display-step>C</display-step>
+          <display-octave>5</display-octave>
+          </unpitched>
+        <duration>2</duration>
+        <instrument id="P1-I39"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <stem>up</stem>
+        </note>
+      <backup>
+        <duration>8</duration>
+        </backup>
+      <note default-x="31.36" default-y="-35">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>2</duration>
+        <instrument id="P1-I37"/>
+        <voice>2</voice>
+        <type>quarter</type>
+        <stem>down</stem>
+        </note>
+      <note default-x="69.81" default-y="-40">
+        <rest/>
+        <duration>2</duration>
+        <voice>2</voice>
+        <type>quarter</type>
+        </note>
+      <note default-x="108.26" default-y="-35">
+        <unpitched>
+          <display-step>F</display-step>
+          <display-octave>4</display-octave>
+          </unpitched>
+        <duration>2</duration>
+        <instrument id="P1-I37"/>
+        <voice>2</voice>
+        <type>quarter</type>
+        <stem>down</stem>
+        </note>
+      <note default-x="146.71" default-y="-40">
+        <rest/>
+        <duration>2</duration>
+        <voice>2</voice>
+        <type>quarter</type>
+        </note>
+      <barline location="right">
+        <bar-style>light-heavy</bar-style>
+        <repeat direction="backward"/>
+        </barline>
+      </measure>
+    </part>
+  </score-partwise>
