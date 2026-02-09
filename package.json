@@ -9,7 +9,9 @@
     "web": "expo start --web",
     "publish": "eas update --auto",
     "build:preview": "eas build --profile preview --platform ios",
-    "build:prod": "eas build --profile production --platform ios"
+    "build:prod": "eas build --profile production --platform ios",
+    "build:testflight": "eas build --profile production --platform ios && eas submit --platform ios",
+    "submit": "eas submit --platform ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
