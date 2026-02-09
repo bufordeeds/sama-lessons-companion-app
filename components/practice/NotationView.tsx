@@ -49,12 +49,9 @@ function buildHtml(osmdJs: string): string {
     '<style>\n' +
     '* { margin: 0; padding: 0; box-sizing: border-box; }\n' +
     'body { background: ' + colors.background + '; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; }\n' +
-    '#notation { width: 100%; padding: 8px; }\n' +
+    '#notation { width: 100%; padding: 8px; filter: invert(1); }\n' +
     '#loading { color: ' + colors.textMuted + '; text-align: center; padding: 40px 20px; font-family: -apple-system, system-ui, sans-serif; font-size: 14px; }\n' +
     '#error { color: #EF5350; text-align: center; padding: 40px 20px; font-family: -apple-system, system-ui, sans-serif; font-size: 14px; display: none; }\n' +
-    'svg text { fill: ' + colors.text + ' !important; }\n' +
-    'svg line, svg path { stroke: ' + colors.text + ' !important; }\n' +
-    'svg rect.vf-stave-section { fill: none !important; }\n' +
     '</style>\n' +
     '<script>' + osmdJs + '<\/script>\n' +
     '</head>\n<body>\n' +
@@ -89,8 +86,6 @@ function buildHtml(osmdJs: string): string {
     '      osmd.load(cmd.data).then(function() {\n' +
     '        osmd.render();\n' +
     '        document.getElementById("loading").style.display = "none";\n' +
-    '        var svgs = document.querySelectorAll("svg");\n' +
-    '        svgs.forEach(function(svg) { svg.style.filter = "invert(1) hue-rotate(180deg)"; });\n' +
     '        sendEvent({ type: "loaded", measureCount: osmd.sheet ? osmd.sheet.sourceMeasures.length : 0 });\n' +
     '      }).catch(function(e) {\n' +
     '        document.getElementById("error").style.display = "block";\n' +
