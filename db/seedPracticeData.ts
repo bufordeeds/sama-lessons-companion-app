@@ -4,15 +4,18 @@ import {
 	createAttempt,
 	createSegment,
 	createSession,
+	deleteSession,
 	endSegment,
 	endSession,
 	getPreference,
 	setPreference,
 	updateSessionNotes,
-	updateSessionVideoUrl
+	updateSessionVideoUrl,
+	getDb
 } from './queries';
 
-const SEED_KEY = 'practice_data_seeded_v4';
+const SEED_KEY = 'practice_data_seeded_v5';
+const OLD_SEED_KEYS = ['practice_data_seeded', 'practice_data_seeded_v2', 'practice_data_seeded_v3', 'practice_data_seeded_v4'];
 
 interface AttemptData {
 	ostinato: Ostinato;
@@ -126,6 +129,22 @@ const RS2_SEGMENTS: SegmentData[] = [
 export function seedPracticeData(): void {
 	// Only seed once
 	if (getPreference(SEED_KEY) === 'true') return;
+
+	// Clean up sessions from older seed versions to prevent duplicates
+	const hadOldSeed = OLD_SEED_KEYS.some((k) => getPreference(k) === 'true');
+	if (hadOldSeed) {
+		// Delete all seeded sessions (they have no user edits worth keeping)
+		const db = getDb();
+		const sessions = db.getAllSync<{ id: string }>(
+			'SELECT id FROM practice_sessions'
+		);
+		for (const s of sessions) {
+			deleteSession(s.id);
+		}
+		for (const k of OLD_SEED_KEYS) {
+			db.runSync('DELETE FROM user_preferences WHERE key = ?', k);
+		}
+	}
 
 	// ── Session 1: Walking Beat — May 22, 2025 ──
 	// Fundamentals lesson, no ostinato attempts — just notes + video

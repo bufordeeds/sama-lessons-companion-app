@@ -39,6 +39,26 @@ export const CURRICULUM_ITEMS = [
     sort_order: 4,
     ostinatos: ['1A', '2A', '3A', '4A', '1B', '2B', '3B', '4B'] as const,
   },
+  {
+    id: 'practice-pad',
+    name: 'Practice Pad Fundamentals',
+    type: 'fundamentals' as const,
+    series_number: null,
+    description:
+      'Rudiments, stick control, and other practice pad exercises.',
+    sort_order: 50,
+    ostinatos: [] as const,
+  },
+  {
+    id: 'misc',
+    name: 'Misc',
+    type: 'fundamentals' as const,
+    series_number: null,
+    description:
+      'Songs, jams, and anything else — Olivia Dean, RHCP, Miles Davis, etc.',
+    sort_order: 99,
+    ostinatos: [] as const,
+  },
 ] as const;
 
 /** All possible ostinato values across all curriculum items */
@@ -56,7 +76,8 @@ export const RHYTHM_SERIES_OSTINATOS: Ostinato[] = ['1A', '2A', '3A', '4A', '1B'
 /** Helper to get ostinatos for a curriculum item by ID */
 export function getOstinatosForCurriculum(curriculumItemId: string): readonly Ostinato[] {
   const item = CURRICULUM_ITEMS.find((i) => i.id === curriculumItemId);
-  return (item?.ostinatos ?? RHYTHM_SERIES_OSTINATOS) as readonly Ostinato[];
+  if (!item) return RHYTHM_SERIES_OSTINATOS; // unknown ID — default to full 8
+  return item.ostinatos as readonly Ostinato[];
 }
 
 export const OSTINATO_DESCRIPTIONS: Partial<Record<Ostinato, string>> = {
