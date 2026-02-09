@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { randomUUID } from 'expo-crypto';
-import type { Ostinato } from '@/constants/curriculum';
+import { getOstinatosForCurriculum, type Ostinato } from '@/constants/curriculum';
 import type { AttemptRow } from '@/types';
 import * as queries from '@/db/queries';
 import { hapticLight, hapticMedium, hapticSelection, hapticNotification } from '@/utils/haptics';
@@ -63,7 +63,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     const sessionId = randomUUID();
     const segmentId = randomUUID();
 
-    queries.createSession(sessionId, now);
+    const ostinatos = getOstinatosForCurriculum(curriculumItemId);
+    queries.createSession(sessionId, now, curriculumItemId);
     queries.createSegment(segmentId, sessionId, 1, now);
 
     set({
@@ -72,7 +73,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         currentSegmentId: segmentId,
         segmentNumber: 1,
         curriculumItemId,
-        selectedOstinato: '1A',
+        selectedOstinato: ostinatos[0] ?? '1A',
         tempo: tempo ?? 100,
         mistakeCount: 0,
         ostinatoBroke: false,
@@ -94,6 +95,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
 
     // Get curriculum item from existing attempts
     const curriculumItemId = queries.getSessionCurriculumItemId(sessionId) ?? '';
+    const ostinatos = getOstinatosForCurriculum(curriculumItemId);
 
     // Get last segment to determine next segment number
     const lastSegment = queries.getLastSegmentForSession(sessionId);
@@ -116,7 +118,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         currentSegmentId: segmentId,
         segmentNumber: nextNumber,
         curriculumItemId,
-        selectedOstinato: '1A',
+        selectedOstinato: ostinatos[0] ?? '1A',
         tempo: lastTempo,
         mistakeCount: 0,
         ostinatoBroke: false,
@@ -175,13 +177,14 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
 
     queries.createSegment(segmentId, activeSession.sessionId, nextNumber, now);
 
+    const newSegOstinatos = getOstinatosForCurriculum(activeSession.curriculumItemId);
     set({
       activeSession: {
         ...activeSession,
         currentSegmentId: segmentId,
         segmentNumber: nextNumber,
         segmentStartedAt: now,
-        selectedOstinato: '1A',
+        selectedOstinato: newSegOstinatos[0] ?? '1A',
         mistakeCount: 0,
         ostinatoBroke: false,
       },

@@ -1,49 +1,73 @@
 import React from 'react';
 import { StyleSheet, Pressable, View as RNView } from 'react-native';
 import { Text } from '@/components/Themed';
-import { OSTINATOS, type Ostinato } from '@/constants/curriculum';
+import { getOstinatosForCurriculum, type Ostinato } from '@/constants/curriculum';
 import { colors, spacing, fontSize, borderRadius, touchTarget } from '@/constants/theme';
 
 interface OstinatoSelectorProps {
   selectedOstinato: Ostinato;
   onSelect: (ostinato: Ostinato) => void;
   ostinatoStatuses: Map<Ostinato, { passed: boolean; attemptCount: number }>;
+  curriculumItemId?: string;
 }
 
 export function OstinatoSelector({
   selectedOstinato,
   onSelect,
   ostinatoStatuses,
+  curriculumItemId,
 }: OstinatoSelectorProps) {
-  const aRow = OSTINATOS.filter((o) => o.endsWith('A'));
-  const bRow = OSTINATOS.filter((o) => o.endsWith('B'));
+  const ostinatos = getOstinatosForCurriculum(curriculumItemId ?? '');
+  const aRow = ostinatos.filter((o) => o.endsWith('A'));
+  const bRow = ostinatos.filter((o) => o.endsWith('B'));
+  const plainRow = ostinatos.filter((o) => !o.endsWith('A') && !o.endsWith('B'));
+
+  if (ostinatos.length === 0) return null;
 
   return (
     <RNView style={styles.container}>
-      <RNView style={styles.row}>
-        {aRow.map((ost) => (
-          <OstinatoCell
-            key={ost}
-            ostinato={ost}
-            isSelected={selectedOstinato === ost}
-            status={ostinatoStatuses.get(ost)}
-            onPress={() => onSelect(ost)}
-            variant="A"
-          />
-        ))}
-      </RNView>
-      <RNView style={styles.row}>
-        {bRow.map((ost) => (
-          <OstinatoCell
-            key={ost}
-            ostinato={ost}
-            isSelected={selectedOstinato === ost}
-            status={ostinatoStatuses.get(ost)}
-            onPress={() => onSelect(ost)}
-            variant="B"
-          />
-        ))}
-      </RNView>
+      {plainRow.length > 0 && (
+        <RNView style={styles.row}>
+          {plainRow.map((ost) => (
+            <OstinatoCell
+              key={ost}
+              ostinato={ost}
+              isSelected={selectedOstinato === ost}
+              status={ostinatoStatuses.get(ost)}
+              onPress={() => onSelect(ost)}
+              variant="A"
+            />
+          ))}
+        </RNView>
+      )}
+      {aRow.length > 0 && (
+        <RNView style={styles.row}>
+          {aRow.map((ost) => (
+            <OstinatoCell
+              key={ost}
+              ostinato={ost}
+              isSelected={selectedOstinato === ost}
+              status={ostinatoStatuses.get(ost)}
+              onPress={() => onSelect(ost)}
+              variant="A"
+            />
+          ))}
+        </RNView>
+      )}
+      {bRow.length > 0 && (
+        <RNView style={styles.row}>
+          {bRow.map((ost) => (
+            <OstinatoCell
+              key={ost}
+              ostinato={ost}
+              isSelected={selectedOstinato === ost}
+              status={ostinatoStatuses.get(ost)}
+              onPress={() => onSelect(ost)}
+              variant="B"
+            />
+          ))}
+        </RNView>
+      )}
     </RNView>
   );
 }

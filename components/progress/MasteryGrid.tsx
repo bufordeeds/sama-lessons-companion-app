@@ -1,12 +1,13 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from '@/components/Themed';
-import { OSTINATOS, type Ostinato } from '@/constants/curriculum';
+import { getOstinatosForCurriculum, type Ostinato } from '@/constants/curriculum';
 import type { MasteryStatus } from '@/types';
 import { colors, spacing, fontSize, borderRadius } from '@/constants/theme';
 
 interface MasteryGridProps {
   grid: Map<Ostinato, { status: MasteryStatus; attemptCount: number }>;
+  curriculumItemId: string;
 }
 
 const STATUS_COLORS: Record<MasteryStatus, { bg: string; border: string; text: string; countText: string }> = {
@@ -43,22 +44,43 @@ const LEGEND: { status: MasteryStatus; label: string; icon: string }[] = [
   { status: 'mastered', label: 'Mastered', icon: '★' },
 ];
 
-export function MasteryGrid({ grid }: MasteryGridProps) {
-  const aOstinatos = OSTINATOS.filter((o) => o.endsWith('A'));
-  const bOstinatos = OSTINATOS.filter((o) => o.endsWith('B'));
+export function MasteryGrid({ grid, curriculumItemId }: MasteryGridProps) {
+  const ostinatos = getOstinatosForCurriculum(curriculumItemId);
+  const aRow = ostinatos.filter((o) => o.endsWith('A'));
+  const bRow = ostinatos.filter((o) => o.endsWith('B'));
+  const plainRow = ostinatos.filter((o) => !o.endsWith('A') && !o.endsWith('B'));
+
+  if (ostinatos.length === 0) {
+    return (
+      <View style={styles.grid}>
+        <Text style={styles.noOstinatos}>No ostinatos for this curriculum item</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.grid}>
-      <View style={styles.row}>
-        {aOstinatos.map((ost) => (
-          <MasteryCell key={ost} ostinato={ost} data={grid.get(ost)} />
-        ))}
-      </View>
-      <View style={styles.row}>
-        {bOstinatos.map((ost) => (
-          <MasteryCell key={ost} ostinato={ost} data={grid.get(ost)} />
-        ))}
-      </View>
+      {plainRow.length > 0 && (
+        <View style={styles.row}>
+          {plainRow.map((ost) => (
+            <MasteryCell key={ost} ostinato={ost} data={grid.get(ost)} />
+          ))}
+        </View>
+      )}
+      {aRow.length > 0 && (
+        <View style={styles.row}>
+          {aRow.map((ost) => (
+            <MasteryCell key={ost} ostinato={ost} data={grid.get(ost)} />
+          ))}
+        </View>
+      )}
+      {bRow.length > 0 && (
+        <View style={styles.row}>
+          {bRow.map((ost) => (
+            <MasteryCell key={ost} ostinato={ost} data={grid.get(ost)} />
+          ))}
+        </View>
+      )}
       <View style={styles.legend}>
         {LEGEND.map((item) => {
           const palette = STATUS_COLORS[item.status];
@@ -170,5 +192,12 @@ const styles = StyleSheet.create({
   legendLabel: {
     fontSize: fontSize.xs,
     color: colors.textMuted,
+  },
+  noOstinatos: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingVertical: spacing.md,
   },
 });

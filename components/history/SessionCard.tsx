@@ -2,11 +2,13 @@ import React from 'react';
 import { StyleSheet, Pressable, View as RNView } from 'react-native';
 import { Text } from '@/components/Themed';
 import dayjs from 'dayjs';
+import { getOstinatosForCurriculum } from '@/constants/curriculum';
 import { colors, spacing, fontSize, borderRadius } from '@/constants/theme';
 
 interface SessionCardProps {
   id: string;
   startedAt: string;
+  curriculumItemId: string;
   curriculumItemName: string;
   segmentCount: number;
   durationMinutes: number;
@@ -27,6 +29,7 @@ function formatDuration(minutes: number): string {
 
 export function SessionCard({
   startedAt,
+  curriculumItemId,
   curriculumItemName,
   segmentCount,
   durationMinutes,
@@ -40,6 +43,7 @@ export function SessionCard({
   const date = dayjs(startedAt).format('MMM D, YYYY');
   const tempoRange =
     minTempo === maxTempo ? `${minTempo} BPM` : `${minTempo}–${maxTempo} BPM`;
+  const totalOstinatos = getOstinatosForCurriculum(curriculumItemId).length;
 
   return (
     <Pressable style={styles.card} onPress={onPress}>
@@ -66,12 +70,12 @@ export function SessionCard({
               <RNView
                 style={[
                   styles.progressFill,
-                  { width: `${(ostinatosPassed / 8) * 100}%` },
+                  { width: totalOstinatos > 0 ? `${(ostinatosPassed / totalOstinatos) * 100}%` : '0%' },
                 ]}
               />
             </RNView>
             <Text style={styles.progressLabel}>
-              {ostinatosPassed}/8 ostinatos passed
+              {ostinatosPassed}/{totalOstinatos} ostinatos passed
             </Text>
           </RNView>
         </>

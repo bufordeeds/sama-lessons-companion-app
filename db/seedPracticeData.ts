@@ -133,7 +133,7 @@ export function seedPracticeData(): void {
 	const walkingStart = '2025-05-22T15:00:00.000Z';
 	const walkingEnd = '2025-05-22T15:30:00.000Z';
 
-	createSession(walkingId, walkingStart);
+	createSession(walkingId, walkingStart, 'walking-beat');
 	const walkingSegId = randomUUID();
 	createSegment(walkingSegId, walkingId, 1, walkingStart);
 	endSegment(walkingSegId, walkingEnd);
@@ -146,7 +146,7 @@ export function seedPracticeData(): void {
 	const rs2StartedAt = RS2_SEGMENTS[0].startedAt;
 	const rs2EndedAt = RS2_SEGMENTS[RS2_SEGMENTS.length - 1].endedAt;
 
-	createSession(rs2Id, rs2StartedAt);
+	createSession(rs2Id, rs2StartedAt, 'rhythm-series-2');
 
 	for (let s = 0; s < RS2_SEGMENTS.length; s++) {
 		const seg = RS2_SEGMENTS[s];

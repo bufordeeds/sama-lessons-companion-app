@@ -133,7 +133,7 @@ export default function ProgressScreen() {
           "Mastered ★ — Last 10 attempts average 1 or fewer mistakes with no breaks\n\n" +
           "Pass all 8 ostinatos, then work toward mastering them!"}
       >
-        <MasteryGrid grid={masteryGrid} />
+        <MasteryGrid grid={masteryGrid} curriculumItemId={selectedCurriculumId} />
       </DashboardSection>
 
       <DashboardSection

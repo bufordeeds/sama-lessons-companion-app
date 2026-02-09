@@ -5,7 +5,7 @@ import { Text } from '@/components/Themed';
 import { Swipeable } from 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import dayjs from 'dayjs';
-import { OSTINATOS, type Ostinato } from '@/constants/curriculum';
+import { ALL_OSTINATOS, type Ostinato } from '@/constants/curriculum';
 import type { AttemptRow, SessionSegmentRow } from '@/types';
 import { Badge } from '@/components/shared/Badge';
 import { VideoLinkCard, AddVideoButton } from '@/components/history/VideoLinkCard';
@@ -97,7 +97,7 @@ function SwipeableSegment({
               <Text style={[styles.headerLabel, { flex: 1 }]}>Attempts</Text>
             </RNView>
 
-            {OSTINATOS.map((ost) => {
+            {ALL_OSTINATOS.map((ost) => {
               const ostAttempts = byOstinato.get(ost);
               if (!ostAttempts || ostAttempts.length === 0) return null;
 

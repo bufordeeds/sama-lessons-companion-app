@@ -157,6 +157,7 @@ export default function PracticeScreen() {
           selectedOstinato={activeSession.selectedOstinato}
           onSelect={selectOstinato}
           ostinatoStatuses={ostinatoStatuses}
+          curriculumItemId={activeSession.curriculumItemId}
         />
 
         <AttemptLogger

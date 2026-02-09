@@ -13,6 +13,7 @@ export function initializeDatabase(db: SQLiteDatabase): void {
 
     CREATE TABLE IF NOT EXISTS practice_sessions (
       id TEXT PRIMARY KEY,
+      curriculum_item_id TEXT REFERENCES curriculum_items(id),
       started_at TEXT NOT NULL,
       ended_at TEXT,
       notes TEXT,
@@ -33,7 +34,7 @@ export function initializeDatabase(db: SQLiteDatabase): void {
       id TEXT PRIMARY KEY,
       session_segment_id TEXT NOT NULL REFERENCES session_segments(id),
       curriculum_item_id TEXT NOT NULL REFERENCES curriculum_items(id),
-      ostinato TEXT NOT NULL CHECK(ostinato IN ('1A','2A','3A','4A','1B','2B','3B','4B')),
+      ostinato TEXT NOT NULL CHECK(ostinato IN ('1','2','3','4','1A','2A','3A','4A','1B','2B','3B','4B')),
       tempo INTEGER NOT NULL,
       mistakes INTEGER NOT NULL DEFAULT 0,
       ostinato_broke INTEGER NOT NULL DEFAULT 0,

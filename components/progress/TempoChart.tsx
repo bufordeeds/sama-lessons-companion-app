@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from '@/components/Themed';
 import { CartesianChart, Line, Area, Scatter } from 'victory-native';
-import { OSTINATOS, type Ostinato } from '@/constants/curriculum';
+import { ALL_OSTINATOS, type Ostinato } from '@/constants/curriculum';
 import { ChartToggle } from './ChartToggle';
 import { colors, spacing, fontSize } from '@/constants/theme';
 
@@ -25,7 +25,11 @@ interface TempoChartProps {
   ostinatoData: TempoEntry[];
 }
 
-const OSTINATO_COLORS: Record<Ostinato, string> = {
+const OSTINATO_COLORS: Partial<Record<Ostinato, string>> = {
+  '1': '#FF6B6B',
+  '2': '#FFB347',
+  '3': '#87CEEB',
+  '4': '#98FB98',
   '1A': '#FF6B6B',
   '2A': '#FFB347',
   '3A': '#87CEEB',
@@ -125,7 +129,7 @@ function OstinatoChart({ data }: { data: TempoEntry[] }) {
     return dates.map((date, i) => {
       const dateMap = byDate.get(date)!;
       const row: Record<string, number> = { x: i };
-      for (const ost of OSTINATOS) {
+      for (const ost of ALL_OSTINATOS) {
         const tempos = dateMap[ost];
         row[ost] = tempos ? tempos.reduce((a, b) => a + b, 0) / tempos.length : 0;
       }
@@ -135,7 +139,7 @@ function OstinatoChart({ data }: { data: TempoEntry[] }) {
 
   // Find which ostinatos actually have data
   const activeOstinatos = useMemo(() => {
-    return OSTINATOS.filter((ost) =>
+    return ALL_OSTINATOS.filter((ost) =>
       chartData.some((d) => (d[ost] as number) > 0),
     );
   }, [chartData]);
@@ -163,7 +167,7 @@ function OstinatoChart({ data }: { data: TempoEntry[] }) {
               <Line
                 key={ost}
                 points={points[ost as keyof typeof points]}
-                color={OSTINATO_COLORS[ost]}
+                color={OSTINATO_COLORS[ost] ?? colors.textMuted}
                 strokeWidth={2}
                 curveType="monotoneX"
                 connectMissingData
@@ -176,7 +180,7 @@ function OstinatoChart({ data }: { data: TempoEntry[] }) {
         {activeOstinatos.map((ost) => (
           <View key={ost} style={styles.legendItem}>
             <View
-              style={[styles.legendDot, { backgroundColor: OSTINATO_COLORS[ost] }]}
+              style={[styles.legendDot, { backgroundColor: OSTINATO_COLORS[ost] ?? colors.textMuted }]}
             />
             <Text style={styles.legendText}>{ost}</Text>
           </View>

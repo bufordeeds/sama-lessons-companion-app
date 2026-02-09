@@ -13,6 +13,7 @@ export interface CurriculumItemRow {
 
 export interface PracticeSessionRow {
   id: string;
+  curriculum_item_id: string | null;
   started_at: string;
   ended_at: string | null;
   notes: string | null;

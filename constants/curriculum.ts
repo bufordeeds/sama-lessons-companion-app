@@ -7,6 +7,7 @@ export const CURRICULUM_ITEMS = [
     description:
       'Kick on downbeats, hi-hat pedal on upbeats. 4 sixteenth notes on snare and 3 toms per beat.',
     sort_order: 1,
+    ostinatos: [] as const,
   },
   {
     id: 'eighth-note-exercises',
@@ -16,6 +17,7 @@ export const CURRICULUM_ITEMS = [
     description:
       'Various eighth note kick and snare patterns over rock ostinatos.',
     sort_order: 2,
+    ostinatos: ['1', '2', '3', '4'] as const,
   },
   {
     id: 'rhythm-series-1',
@@ -25,6 +27,7 @@ export const CURRICULUM_ITEMS = [
     description:
       '32 measures of quarter notes and rests. A ostinatos: snare plays quarters. B ostinatos: kick plays quarters.',
     sort_order: 3,
+    ostinatos: ['1A', '2A', '3A', '4A', '1B', '2B', '3B', '4B'] as const,
   },
   {
     id: 'rhythm-series-2',
@@ -34,23 +37,33 @@ export const CURRICULUM_ITEMS = [
     description:
       '32 measures mixing eighth notes, quarter notes, and rests.',
     sort_order: 4,
+    ostinatos: ['1A', '2A', '3A', '4A', '1B', '2B', '3B', '4B'] as const,
   },
 ] as const;
 
-export const OSTINATOS = [
-  '1A',
-  '2A',
-  '3A',
-  '4A',
-  '1B',
-  '2B',
-  '3B',
-  '4B',
+/** All possible ostinato values across all curriculum items */
+export const ALL_OSTINATOS = [
+  '1', '2', '3', '4',
+  '1A', '2A', '3A', '4A',
+  '1B', '2B', '3B', '4B',
 ] as const;
 
-export type Ostinato = (typeof OSTINATOS)[number];
+export type Ostinato = (typeof ALL_OSTINATOS)[number];
 
-export const OSTINATO_DESCRIPTIONS: Record<Ostinato, string> = {
+/** The 8 A/B ostinatos used by Rhythm Series */
+export const RHYTHM_SERIES_OSTINATOS: Ostinato[] = ['1A', '2A', '3A', '4A', '1B', '2B', '3B', '4B'];
+
+/** Helper to get ostinatos for a curriculum item by ID */
+export function getOstinatosForCurriculum(curriculumItemId: string): readonly Ostinato[] {
+  const item = CURRICULUM_ITEMS.find((i) => i.id === curriculumItemId);
+  return (item?.ostinatos ?? RHYTHM_SERIES_OSTINATOS) as readonly Ostinato[];
+}
+
+export const OSTINATO_DESCRIPTIONS: Partial<Record<Ostinato, string>> = {
+  '1': 'Rock ostinato 1',
+  '2': 'Rock ostinato 2',
+  '3': 'Rock ostinato 3',
+  '4': 'Rock ostinato 4',
   '1A': 'Ride 8ths, HH \u2193, Kick 1&3',
   '2A': 'Ride 8ths, HH \u2191, Kick 1&3',
   '3A': 'Ride \u2193, HH 8ths, Kick 1&3',

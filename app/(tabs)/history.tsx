@@ -40,6 +40,7 @@ export default function HistoryScreen() {
         <SessionCard
           id={item.id}
           startedAt={item.started_at}
+          curriculumItemId={item.curriculum_item_id ?? ''}
           curriculumItemName={item.curriculum_item_name ?? 'Practice'}
           segmentCount={item.segment_count}
           durationMinutes={item.duration_minutes}

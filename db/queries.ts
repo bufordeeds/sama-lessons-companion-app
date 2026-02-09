@@ -18,11 +18,13 @@ export async function ensureDbReady(): Promise<SQLiteDatabase> {
   initializeDatabase(db);
   seedCurriculumData(db);
 
-  // Add video_url column if missing (migration for existing installs)
-  try {
-    db.runSync('ALTER TABLE practice_sessions ADD COLUMN video_url TEXT');
-  } catch {
-    // Column already exists — expected on fresh installs
+  // Migrations for existing installs
+  const migrations = [
+    'ALTER TABLE practice_sessions ADD COLUMN video_url TEXT',
+    'ALTER TABLE practice_sessions ADD COLUMN curriculum_item_id TEXT REFERENCES curriculum_items(id)',
+  ];
+  for (const sql of migrations) {
+    try { db.runSync(sql); } catch { /* column already exists */ }
   }
 
   // Seed handwritten practice data (runs once, guarded by preference flag)
@@ -42,11 +44,12 @@ export function getCurriculumItems(): CurriculumItemRow[] {
 
 // ── Sessions ────────────────────────────────────────────────────────
 
-export function createSession(id: string, startedAt: string): void {
+export function createSession(id: string, startedAt: string, curriculumItemId?: string): void {
   getDb().runSync(
-    'INSERT INTO practice_sessions (id, started_at) VALUES (?, ?)',
+    'INSERT INTO practice_sessions (id, started_at, curriculum_item_id) VALUES (?, ?, ?)',
     id,
     startedAt,
+    curriculumItemId ?? null,
   );
 }
 
@@ -205,8 +208,8 @@ export function getAllSessions(): {
        ps.id,
        ps.started_at,
        ps.ended_at,
-       a.curriculum_item_id,
-       ci.name as curriculum_item_name,
+       COALESCE(a.curriculum_item_id, ps.curriculum_item_id) as curriculum_item_id,
+       COALESCE(ci.name, ci2.name) as curriculum_item_name,
        COUNT(DISTINCT ss.id) as segment_count,
        (SELECT ROUND(SUM(
          (julianday(COALESCE(ss2.ended_at, datetime('now'))) - julianday(ss2.started_at)) * 1440
@@ -221,6 +224,7 @@ export function getAllSessions(): {
      LEFT JOIN session_segments ss ON ss.session_id = ps.id
      LEFT JOIN attempts a ON a.session_segment_id = ss.id
      LEFT JOIN curriculum_items ci ON ci.id = a.curriculum_item_id
+     LEFT JOIN curriculum_items ci2 ON ci2.id = ps.curriculum_item_id
      GROUP BY ps.id
      HAVING COUNT(a.id) > 0 OR ps.notes IS NOT NULL OR ps.video_url IS NOT NULL
      ORDER BY ps.started_at DESC`,
@@ -246,6 +250,13 @@ export function getSessionAttemptsGrouped(sessionId: string): AttemptRow[] {
 }
 
 export function getSessionCurriculumItemId(sessionId: string): string | null {
+  // Check session-level curriculum first, then fall back to attempts
+  const session = getDb().getFirstSync<{ curriculum_item_id: string | null }>(
+    'SELECT curriculum_item_id FROM practice_sessions WHERE id = ?',
+    sessionId,
+  );
+  if (session?.curriculum_item_id) return session.curriculum_item_id;
+
   const row = getDb().getFirstSync<{ curriculum_item_id: string }>(
     `SELECT DISTINCT a.curriculum_item_id
      FROM attempts a
