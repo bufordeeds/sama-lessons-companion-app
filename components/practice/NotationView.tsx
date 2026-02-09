@@ -85,6 +85,14 @@ function buildHtml(osmdJs: string): string {
     '    if (cmd.type === "load" && osmd) {\n' +
     '      osmd.load(cmd.data).then(function() {\n' +
     '        osmd.render();\n' +
+    '        var contentH = document.getElementById("notation").scrollHeight;\n' +
+    '        var viewportH = window.innerHeight;\n' +
+    '        if (contentH > 0 && contentH < viewportH * 0.9) {\n' +
+    '          var zoom = Math.sqrt(viewportH / contentH);\n' +
+    '          if (zoom > 2.5) zoom = 2.5;\n' +
+    '          osmd.zoom = zoom;\n' +
+    '          osmd.render();\n' +
+    '        }\n' +
     '        document.getElementById("loading").style.display = "none";\n' +
     '        sendEvent({ type: "loaded", measureCount: osmd.sheet ? osmd.sheet.sourceMeasures.length : 0 });\n' +
     '      }).catch(function(e) {\n' +
