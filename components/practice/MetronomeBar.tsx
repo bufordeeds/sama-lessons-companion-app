@@ -156,6 +156,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   tempoSection: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
@@ -203,7 +204,9 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xl,
   },
   rightControls: {
+    flex: 1,
     flexDirection: 'row',
+    justifyContent: 'flex-end',
     gap: spacing.sm,
   },
   iconButton: {

@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderTopLeftRadius: borderRadius.lg,
     borderTopRightRadius: borderRadius.lg,
-    maxHeight: '80%',
+    height: '70%',
   },
   header: {
     flexDirection: 'row',

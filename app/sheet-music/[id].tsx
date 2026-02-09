@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useLayoutEffect } from 'react';
 import { StyleSheet, View as RNView } from 'react-native';
 import { Text } from '@/components/Themed';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { Pressable } from 'react-native';
 import { getSheetById } from '@/constants/sheetMusic';
 import { NotationView } from '@/components/practice/NotationView';
@@ -17,6 +17,14 @@ import { colors, spacing, fontSize, borderRadius, touchTarget } from '@/constant
 export default function SheetMusicScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const sheet = getSheetById(id ?? '');
+  const navigation = useNavigation();
+
+  // Set the header title to the sheet name
+  useLayoutEffect(() => {
+    if (sheet) {
+      navigation.setOptions({ title: sheet.name });
+    }
+  }, [navigation, sheet]);
 
   const activeSession = useSessionStore((s) => s.activeSession);
   const lastLoggedAttemptId = useSessionStore((s) => s.lastLoggedAttemptId);
@@ -28,16 +36,19 @@ export default function SheetMusicScreen() {
     () => getPreference('metronome_sound') ?? DEFAULT_SOUND_ID,
   );
 
-  // Use session tempo if active, otherwise use a default
-  const tempo = activeSession?.tempo ?? 100;
+  // Local tempo for standalone use; session tempo overrides when active
+  const [localTempo, setLocalTempo] = useState(100);
+  const tempo = activeSession?.tempo ?? localTempo;
 
   const handleTempoChange = useCallback(
     (newTempo: number) => {
       if (activeSession) {
-        adjustTempo(newTempo - tempo);
+        adjustTempo(newTempo - (activeSession.tempo ?? 100));
+      } else {
+        setLocalTempo(newTempo);
       }
     },
-    [activeSession, tempo, adjustTempo],
+    [activeSession, adjustTempo],
   );
 
   const handleUndo = useCallback(() => {
