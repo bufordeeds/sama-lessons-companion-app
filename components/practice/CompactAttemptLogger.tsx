@@ -1,9 +1,11 @@
-import React from 'react';
-import { StyleSheet, Pressable, Modal, View as RNView } from 'react-native';
+import React, { useMemo } from 'react';
+import { StyleSheet, Pressable, Modal, ScrollView, View as RNView } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from '@/components/Themed';
 import { OstinatoSelector } from './OstinatoSelector';
 import { MistakeCounter } from './MistakeCounter';
 import { useSessionStore } from '@/stores/sessionStore';
+import { getOstinatoStatusesForSegment } from '@/db/queries';
 import type { Ostinato } from '@/constants/curriculum';
 import { colors, spacing, fontSize, borderRadius, touchTarget } from '@/constants/theme';
 
@@ -19,19 +21,32 @@ export function CompactAttemptLogger({
   curriculumItemId,
 }: CompactAttemptLoggerProps) {
   const activeSession = useSessionStore((s) => s.activeSession);
+  const currentSegmentAttempts = useSessionStore((s) => s.currentSegmentAttempts);
   const {
     selectOstinato,
     incrementMistakes,
     decrementMistakes,
     toggleOstinatoBroke,
     logAttempt,
+    deleteAttempt,
   } = useSessionStore();
+
+  const ostinatoStatuses = useMemo(() => {
+    if (!activeSession) return new Map<Ostinato, { passed: boolean; attemptCount: number }>();
+    return getOstinatoStatusesForSegment(activeSession.currentSegmentId);
+  }, [activeSession?.currentSegmentId, currentSegmentAttempts]);
+
+  const filteredAttempts = useMemo(() => {
+    if (!activeSession) return [];
+    return currentSegmentAttempts.filter(
+      (a) => a.ostinato === activeSession.selectedOstinato,
+    );
+  }, [currentSegmentAttempts, activeSession?.selectedOstinato]);
 
   if (!activeSession) return null;
 
   const handleLog = () => {
     logAttempt();
-    onClose();
   };
 
   return (
@@ -47,48 +62,100 @@ export function CompactAttemptLogger({
 
           <Text style={styles.title}>Log Attempt</Text>
 
+          <ScrollView
+            style={styles.sheetScroll}
+            contentContainerStyle={styles.sheetScrollContent}
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+            nestedScrollEnabled
+          >
           <OstinatoSelector
             selectedOstinato={activeSession.selectedOstinato}
             onSelect={selectOstinato}
-            ostinatoStatuses={new Map()}
+            ostinatoStatuses={ostinatoStatuses}
             curriculumItemId={curriculumItemId}
           />
+
+          {/* Attempt list for selected ostinato */}
+          {filteredAttempts.length > 0 && (
+            <RNView style={styles.attemptSection}>
+              <Text style={styles.attemptHeader}>
+                Attempts for {activeSession.selectedOstinato}
+              </Text>
+              {filteredAttempts.map((item, index) => {
+                const passed = item.mistakes <= 3 && item.ostinato_broke === 0;
+                const broke = item.ostinato_broke === 1;
+                return (
+                  <RNView key={item.id} style={styles.attemptRow}>
+                    <RNView style={styles.attemptRowContent}>
+                      <Text style={styles.attemptNum}>#{index + 1}</Text>
+                      <Text style={styles.attemptMistakes}>
+                        {item.mistakes} mistake{item.mistakes !== 1 ? 's' : ''}
+                      </Text>
+                      {passed && (
+                        <RNView style={styles.passedBadge}>
+                          <Ionicons name="checkmark" size={12} color={colors.success} />
+                          <Text style={styles.passedText}>Passed</Text>
+                        </RNView>
+                      )}
+                      {broke && (
+                        <RNView style={styles.brokeBadge}>
+                          <Text style={styles.brokeTagText}>Broke</Text>
+                        </RNView>
+                      )}
+                    </RNView>
+                    <Pressable
+                      style={styles.deleteButton}
+                      onPress={() => deleteAttempt(item.id)}
+                      hitSlop={8}
+                    >
+                      <Ionicons name="close" size={18} color={colors.textMuted} />
+                    </Pressable>
+                  </RNView>
+                );
+              })}
+            </RNView>
+          )}
 
           <RNView style={styles.tempoRow}>
             <Text style={styles.tempoLabel}>Tempo</Text>
             <Text style={styles.tempoValue}>{activeSession.tempo} BPM</Text>
           </RNView>
 
-          <MistakeCounter
-            count={activeSession.mistakeCount}
-            onIncrement={incrementMistakes}
-            onDecrement={decrementMistakes}
-          />
+          {/* Bottom split: mistakes left, actions right */}
+          <RNView style={styles.bottomRow}>
+            <RNView style={styles.bottomLeft}>
+              <MistakeCounter
+                count={activeSession.mistakeCount}
+                onIncrement={incrementMistakes}
+                onDecrement={decrementMistakes}
+              />
+            </RNView>
 
-          <Pressable
-            style={[
-              styles.brokeButton,
-              activeSession.ostinatoBroke && styles.brokeButtonActive,
-            ]}
-            onPress={toggleOstinatoBroke}
-          >
-            <Text
-              style={[
-                styles.brokeText,
-                activeSession.ostinatoBroke && styles.brokeTextActive,
-              ]}
-            >
-              Ostinato Broke
-            </Text>
-          </Pressable>
+            <RNView style={styles.bottomRight}>
+              <Pressable
+                style={[
+                  styles.brokeButton,
+                  activeSession.ostinatoBroke && styles.brokeButtonActive,
+                ]}
+                onPress={toggleOstinatoBroke}
+              >
+                <Text
+                  style={[
+                    styles.brokeText,
+                    activeSession.ostinatoBroke && styles.brokeTextActive,
+                  ]}
+                >
+                  Broke
+                </Text>
+              </Pressable>
 
-          <Pressable style={styles.logButton} onPress={handleLog}>
-            <Text style={styles.logButtonText}>LOG ATTEMPT</Text>
-          </Pressable>
-
-          <Pressable style={styles.cancelButton} onPress={onClose}>
-            <Text style={styles.cancelText}>Cancel</Text>
-          </Pressable>
+              <Pressable style={styles.logButton} onPress={handleLog}>
+                <Text style={styles.logButtonText}>LOG</Text>
+              </Pressable>
+            </RNView>
+          </RNView>
+          </ScrollView>
         </Pressable>
       </Pressable>
     </Modal>
@@ -107,7 +174,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: borderRadius.lg,
     padding: spacing.xl,
     paddingBottom: spacing.xxxl,
-    gap: spacing.lg,
+    maxHeight: '85%',
   },
   handle: {
     width: 40,
@@ -122,6 +189,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.text,
     textAlign: 'center',
+    marginBottom: spacing.md,
   },
   tempoRow: {
     flexDirection: 'row',
@@ -139,6 +207,91 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontVariant: ['tabular-nums'],
   },
+  attemptSection: {
+    gap: spacing.xs,
+  },
+  attemptHeader: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  sheetScroll: {
+    flexShrink: 1,
+  },
+  sheetScrollContent: {
+    gap: spacing.lg,
+  },
+  attemptRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.surfaceLight,
+    borderRadius: borderRadius.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.xs,
+  },
+  attemptRowContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    flex: 1,
+  },
+  attemptNum: {
+    fontSize: fontSize.md,
+    color: colors.textSecondary,
+    fontWeight: '600',
+    fontVariant: ['tabular-nums'],
+    width: 30,
+  },
+  attemptMistakes: {
+    fontSize: fontSize.md,
+    color: colors.text,
+  },
+  passedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: colors.successDim,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
+  },
+  passedText: {
+    fontSize: fontSize.xs,
+    color: colors.success,
+    fontWeight: '600',
+  },
+  brokeBadge: {
+    backgroundColor: colors.dangerDim,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
+  },
+  brokeTagText: {
+    fontSize: fontSize.xs,
+    color: colors.danger,
+    fontWeight: '600',
+  },
+  deleteButton: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    gap: spacing.lg,
+  },
+  bottomLeft: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  bottomRight: {
+    flex: 1,
+    gap: spacing.sm,
+  },
   brokeButton: {
     minHeight: touchTarget.min,
     borderRadius: borderRadius.md,
@@ -147,7 +300,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm,
   },
   brokeButtonActive: {
     backgroundColor: colors.dangerDim,
@@ -162,25 +315,18 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   logButton: {
-    minHeight: touchTarget.comfortable,
+    flex: 1,
+    minHeight: touchTarget.min,
     borderRadius: borderRadius.md,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: spacing.lg,
+    paddingVertical: spacing.sm,
   },
   logButtonText: {
     fontSize: fontSize.lg,
     fontWeight: '700',
     color: colors.background,
     letterSpacing: 1,
-  },
-  cancelButton: {
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-  },
-  cancelText: {
-    fontSize: fontSize.md,
-    color: colors.textMuted,
   },
 });

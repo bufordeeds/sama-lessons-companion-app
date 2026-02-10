@@ -102,6 +102,7 @@ function OstinatoCell({
         {ostinato}
       </Text>
       {passed && <Ionicons name="checkmark" size={14} color={colors.success} style={styles.checkmark} />}
+      {!passed && <RNView style={styles.checkmarkPlaceholder} />}
     </Pressable>
   );
 }
@@ -143,5 +144,10 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     marginTop: 2,
+    height: 16,
+  },
+  checkmarkPlaceholder: {
+    marginTop: 2,
+    height: 16,
   },
 });
