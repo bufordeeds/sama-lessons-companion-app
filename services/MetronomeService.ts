@@ -5,13 +5,16 @@ type TickCallback = (beat: number) => void;
 
 class MetronomeService {
   private static instance: MetronomeService | null = null;
-  private hiPlayer: AudioPlayer | null = null;
-  private loPlayer: AudioPlayer | null = null;
-  private intervalId: ReturnType<typeof setInterval> | null = null;
+  private hiPlayers: AudioPlayer[] = [];
+  private loPlayers: AudioPlayer[] = [];
+  private hiIndex = 0;
+  private loIndex = 0;
+  private timeoutId: ReturnType<typeof setTimeout> | null = null;
+  private nextTickTime = 0;
   private currentSoundId: string = DEFAULT_SOUND_ID;
   private beatCount = 0;
   private tempo = 100;
-  private _subdivision = 1; // 1 = quarter notes, 2 = eighth notes
+  private _subdivision: 1 | 2 = 1; // 1 = quarter notes, 2 = eighth notes
   private _isPlaying = false;
   private _isMuted = false;
   private isInitialized = false;
@@ -43,19 +46,18 @@ class MetronomeService {
     const sound = getSoundById(soundId);
     this.currentSoundId = sound.id;
 
-    this.hiPlayer = createAudioPlayer(sound.hi);
-    this.loPlayer = createAudioPlayer(sound.lo);
+    // Double-buffer: 2 players per sound so one can seek while the other plays
+    this.hiPlayers = [createAudioPlayer(sound.hi), createAudioPlayer(sound.hi)];
+    this.loPlayers = [createAudioPlayer(sound.lo), createAudioPlayer(sound.lo)];
+    this.hiIndex = 0;
+    this.loIndex = 0;
   }
 
   private removePlayers(): void {
-    if (this.hiPlayer) {
-      this.hiPlayer.remove();
-      this.hiPlayer = null;
-    }
-    if (this.loPlayer) {
-      this.loPlayer.remove();
-      this.loPlayer = null;
-    }
+    for (const p of this.hiPlayers) p.remove();
+    for (const p of this.loPlayers) p.remove();
+    this.hiPlayers = [];
+    this.loPlayers = [];
   }
 
   async changeSound(soundId: string): Promise<void> {
@@ -80,15 +82,31 @@ class MetronomeService {
     this._isPlaying = true;
     this.onTick = onTick ?? null;
 
-    const msPerClick = 60000 / (tempo * this._subdivision);
-
     // Play first beat immediately
     this.playBeat();
 
-    this.intervalId = setInterval(() => {
+    // Use drift-compensating setTimeout for accurate timing
+    this.nextTickTime = performance.now() + this.msPerClick;
+    this.scheduleTick();
+  }
+
+  private get msPerClick(): number {
+    return 60000 / (this.tempo * this._subdivision);
+  }
+
+  private scheduleTick(): void {
+    const now = performance.now();
+    const delay = Math.max(0, this.nextTickTime - now);
+
+    this.timeoutId = setTimeout(() => {
+      if (!this._isPlaying) return;
       this.beatCount++;
       this.playBeat();
-    }, msPerClick);
+
+      // Schedule next tick relative to ideal time (not actual time) to prevent drift
+      this.nextTickTime += this.msPerClick;
+      this.scheduleTick();
+    }, delay);
   }
 
   private playBeat(): void {
@@ -97,8 +115,14 @@ class MetronomeService {
 
     if (!this._isMuted) {
       try {
-        const player = isAccent ? this.hiPlayer : this.loPlayer;
-        if (player) {
+        if (isAccent && this.hiPlayers.length > 0) {
+          const player = this.hiPlayers[this.hiIndex];
+          this.hiIndex = (this.hiIndex + 1) % this.hiPlayers.length;
+          player.seekTo(0);
+          player.play();
+        } else if (!isAccent && this.loPlayers.length > 0) {
+          const player = this.loPlayers[this.loIndex];
+          this.loIndex = (this.loIndex + 1) % this.loPlayers.length;
           player.seekTo(0);
           player.play();
         }
@@ -111,9 +135,9 @@ class MetronomeService {
   }
 
   stop(): void {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
     }
     this._isPlaying = false;
     this.beatCount = 0;

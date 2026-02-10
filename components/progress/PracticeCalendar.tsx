@@ -7,9 +7,13 @@ interface PracticeCalendarProps {
   practiceDays: string[]; // ISO date strings (YYYY-MM-DD)
 }
 
+function localDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 const CELL_GAP = 3;
 const DAY_LABEL_WIDTH = 14;
-const DAY_LABELS = ['', 'M', '', 'W', '', 'F', ''];
+const DAY_LABELS = ['M', '', 'W', '', 'F', '', ''];
 
 export function PracticeCalendar({ practiceDays }: PracticeCalendarProps) {
   const { width: screenWidth } = useWindowDimensions();
@@ -36,7 +40,7 @@ export function PracticeCalendar({ practiceDays }: PracticeCalendarProps) {
     const daySet = new Set(practiceDays);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const todayStr = today.toISOString().slice(0, 10);
+    const todayStr = localDateStr(today);
 
     const currentDay = today.getDay();
     const mondayOffset = currentDay === 0 ? 6 : currentDay - 1;
@@ -59,7 +63,7 @@ export function PracticeCalendar({ practiceDays }: PracticeCalendarProps) {
     for (let w = 0; w < weeksToShow; w++) {
       const week: (typeof weeks)[0] = [];
       for (let d = 0; d < 7; d++) {
-        const dateStr = cursor.toISOString().slice(0, 10);
+        const dateStr = localDateStr(cursor);
         const month = cursor.getMonth();
 
         if (d === 0 && month !== lastMonth) {

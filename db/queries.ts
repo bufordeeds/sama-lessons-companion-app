@@ -4,6 +4,10 @@ import { seedCurriculumData } from './seed';
 import type { CurriculumItemRow, AttemptRow, SessionSegmentRow, MasteryStatus } from '@/types';
 import type { Ostinato } from '@/constants/curriculum';
 
+function localDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 let _db: SQLiteDatabase | null = null;
 
 export function getDb(): SQLiteDatabase {
@@ -496,7 +500,7 @@ export function getTempoHistory(curriculumItemId: string): {
       `SELECT
          a.ostinato,
          a.tempo,
-         date(a.created_at) as date,
+         date(a.created_at, 'localtime') as date,
          CASE WHEN a.mistakes <= 3 AND a.ostinato_broke = 0 THEN 1 ELSE 0 END as passed
        FROM attempts a
        WHERE a.curriculum_item_id = ? AND a.deleted_at IS NULL
@@ -514,13 +518,13 @@ export function getAggregateTempoHistory(curriculumItemId: string): {
 }[] {
   return getDb().getAllSync(
     `SELECT
-       date(a.created_at) as date,
+       date(a.created_at, 'localtime') as date,
        ROUND(AVG(a.tempo), 0) as avgTempo,
        MIN(a.tempo) as minTempo,
        MAX(a.tempo) as maxTempo
      FROM attempts a
      WHERE a.curriculum_item_id = ? AND a.deleted_at IS NULL
-     GROUP BY date(a.created_at)
+     GROUP BY date(a.created_at, 'localtime')
      ORDER BY date`,
     curriculumItemId,
   );
@@ -529,7 +533,7 @@ export function getAggregateTempoHistory(curriculumItemId: string): {
 export function getPracticeDays(): string[] {
   return getDb()
     .getAllSync<{ day: string }>(
-      `SELECT DISTINCT date(started_at) as day
+      `SELECT DISTINCT date(started_at, 'localtime') as day
        FROM practice_sessions
        WHERE deleted_at IS NULL
        ORDER BY day`,
@@ -547,7 +551,7 @@ export function getStreakStats(): {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const todayStr = today.toISOString().slice(0, 10);
+  const todayStr = localDateStr(today);
 
   const daySet = new Set(days);
 
@@ -558,7 +562,7 @@ export function getStreakStats(): {
   if (!daySet.has(todayStr)) {
     checkDate.setDate(checkDate.getDate() - 1);
   }
-  while (daySet.has(checkDate.toISOString().slice(0, 10))) {
+  while (daySet.has(localDateStr(checkDate))) {
     current++;
     checkDate.setDate(checkDate.getDate() - 1);
   }

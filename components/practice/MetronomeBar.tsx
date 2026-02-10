@@ -44,7 +44,7 @@ export function MetronomeBar({ tempo, onTempoChange, onOpenSoundPicker }: Metron
       }
       metronome.setSubdivision(subdivision);
       metronome.start(tempo, (beat) => {
-        const totalClicks = 4 * subdivision;
+        const totalClicks = 4 * metronome.subdivision;
         setCurrentBeat(beat % totalClicks);
       });
       setIsPlaying(true);
