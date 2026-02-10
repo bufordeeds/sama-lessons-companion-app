@@ -33,7 +33,7 @@ const darkTheme = {
 
 function RootLayoutNav() {
   const { isReady } = useDatabase();
-  const { session, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
     if (isReady && !isLoading) {
@@ -45,7 +45,7 @@ function RootLayoutNav() {
     return null;
   }
 
-  if (!session) {
+  if (!isAuthenticated) {
     return (
       <ThemeProvider value={darkTheme}>
         <SignInScreen />

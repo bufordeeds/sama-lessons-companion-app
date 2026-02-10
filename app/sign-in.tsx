@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, Image, Alert, Platform, Pressable } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useAuth } from '@/providers/AuthProvider';
 import { colors } from '@/constants/theme';
 
 export default function SignInScreen() {
-  const { signIn } = useAuth();
+  const { signIn, devBypass } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
 
   const handleSignIn = async () => {
@@ -51,6 +51,11 @@ export default function SignInScreen() {
           <Text style={styles.platformNote}>
             Sign in with Apple is only available on iOS devices.
           </Text>
+        )}
+        {__DEV__ && (
+          <Pressable style={styles.devBypass} onPress={() => devBypass()}>
+            <Text style={styles.devBypassText}>Skip (Dev Only)</Text>
+          </Pressable>
         )}
       </View>
     </View>
@@ -99,5 +104,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textMuted,
     textAlign: 'center',
+  },
+  devBypass: {
+    marginTop: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  devBypassText: {
+    fontSize: 14,
+    color: colors.textMuted,
   },
 });
