@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { AppState } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs } from 'expo-router';
 
@@ -6,6 +7,8 @@ import Colors from '@/constants/Colors';
 import { colors } from '@/constants/theme';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import { SyncIndicator } from '@/components/shared/SyncIndicator';
+import { SyncService } from '@/services/SyncService';
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof Ionicons>['name'];
@@ -16,6 +19,22 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const appState = useRef(AppState.currentState);
+
+  // Sync on app foreground
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (nextState) => {
+      if (appState.current.match(/inactive|background/) && nextState === 'active') {
+        SyncService.fullSync();
+      }
+      appState.current = nextState;
+    });
+
+    // Initial sync on mount
+    SyncService.fullSync();
+
+    return () => sub.remove();
+  }, []);
 
   return (
     <Tabs
@@ -37,6 +56,7 @@ export default function TabLayout() {
         options={{
           title: 'Practice',
           tabBarIcon: ({ color }) => <TabBarIcon name="musical-notes" color={color} />,
+          headerRight: () => <SyncIndicator />,
         }}
       />
       <Tabs.Screen

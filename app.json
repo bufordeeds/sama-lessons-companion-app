@@ -13,13 +13,6 @@
       "resizeMode": "contain",
       "backgroundColor": "#1A1A1A"
     },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.bufordeeds8.samalessonscompanionapp",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
-    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
@@ -36,8 +29,17 @@
     "plugins": [
       "expo-router",
       "expo-sqlite",
-      "expo-audio"
+      "expo-audio",
+      "expo-apple-authentication"
     ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.bufordeeds8.samalessonscompanionapp",
+      "usesAppleSignIn": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
     "experiments": {
       "typedRoutes": true
     },

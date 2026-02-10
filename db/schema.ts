@@ -18,6 +18,8 @@ export function initializeDatabase(db: SQLiteDatabase): void {
       ended_at TEXT,
       notes TEXT,
       video_url TEXT,
+      deleted_at TEXT,
+      synced INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -27,6 +29,8 @@ export function initializeDatabase(db: SQLiteDatabase): void {
       segment_number INTEGER NOT NULL,
       started_at TEXT NOT NULL,
       ended_at TEXT,
+      deleted_at TEXT,
+      synced INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -39,6 +43,8 @@ export function initializeDatabase(db: SQLiteDatabase): void {
       mistakes INTEGER NOT NULL DEFAULT 0,
       ostinato_broke INTEGER NOT NULL DEFAULT 0,
       notes TEXT,
+      deleted_at TEXT,
+      synced INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 

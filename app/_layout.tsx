@@ -7,7 +7,9 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { DatabaseProvider, useDatabase } from '@/db/DatabaseProvider';
+import { AuthProvider, useAuth } from '@/providers/AuthProvider';
 import { colors } from '@/constants/theme';
+import SignInScreen from './sign-in';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -31,15 +33,24 @@ const darkTheme = {
 
 function RootLayoutNav() {
   const { isReady } = useDatabase();
+  const { session, isLoading } = useAuth();
 
   useEffect(() => {
-    if (isReady) {
+    if (isReady && !isLoading) {
       SplashScreen.hideAsync();
     }
-  }, [isReady]);
+  }, [isReady, isLoading]);
 
-  if (!isReady) {
+  if (!isReady || isLoading) {
     return null;
+  }
+
+  if (!session) {
+    return (
+      <ThemeProvider value={darkTheme}>
+        <SignInScreen />
+      </ThemeProvider>
+    );
   }
 
   return (
@@ -84,8 +95,10 @@ export default function RootLayout() {
   }
 
   return (
-    <DatabaseProvider>
-      <RootLayoutNav />
-    </DatabaseProvider>
+    <AuthProvider>
+      <DatabaseProvider>
+        <RootLayoutNav />
+      </DatabaseProvider>
+    </AuthProvider>
   );
 }

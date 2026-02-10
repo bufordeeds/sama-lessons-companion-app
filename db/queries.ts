@@ -22,6 +22,13 @@ export async function ensureDbReady(): Promise<SQLiteDatabase> {
   const migrations = [
     'ALTER TABLE practice_sessions ADD COLUMN video_url TEXT',
     'ALTER TABLE practice_sessions ADD COLUMN curriculum_item_id TEXT REFERENCES curriculum_items(id)',
+    // Phase 4: sync columns
+    'ALTER TABLE practice_sessions ADD COLUMN deleted_at TEXT',
+    'ALTER TABLE practice_sessions ADD COLUMN synced INTEGER NOT NULL DEFAULT 0',
+    'ALTER TABLE session_segments ADD COLUMN deleted_at TEXT',
+    'ALTER TABLE session_segments ADD COLUMN synced INTEGER NOT NULL DEFAULT 0',
+    'ALTER TABLE attempts ADD COLUMN deleted_at TEXT',
+    'ALTER TABLE attempts ADD COLUMN synced INTEGER NOT NULL DEFAULT 0',
   ];
   for (const sql of migrations) {
     try { db.runSync(sql); } catch { /* column already exists */ }
@@ -46,7 +53,7 @@ export function getCurriculumItems(): CurriculumItemRow[] {
 
 export function createSession(id: string, startedAt: string, curriculumItemId?: string): void {
   getDb().runSync(
-    'INSERT INTO practice_sessions (id, started_at, curriculum_item_id) VALUES (?, ?, ?)',
+    'INSERT INTO practice_sessions (id, started_at, curriculum_item_id, synced) VALUES (?, ?, ?, 0)',
     id,
     startedAt,
     curriculumItemId ?? null,
@@ -55,7 +62,7 @@ export function createSession(id: string, startedAt: string, curriculumItemId?: 
 
 export function endSession(id: string, endedAt: string): void {
   getDb().runSync(
-    'UPDATE practice_sessions SET ended_at = ? WHERE id = ?',
+    'UPDATE practice_sessions SET ended_at = ?, synced = 0 WHERE id = ?',
     endedAt,
     id,
   );
@@ -70,7 +77,7 @@ export function createSegment(
   startedAt: string,
 ): void {
   getDb().runSync(
-    'INSERT INTO session_segments (id, session_id, segment_number, started_at) VALUES (?, ?, ?, ?)',
+    'INSERT INTO session_segments (id, session_id, segment_number, started_at, synced) VALUES (?, ?, ?, ?, 0)',
     id,
     sessionId,
     segmentNumber,
@@ -80,7 +87,7 @@ export function createSegment(
 
 export function endSegment(id: string, endedAt: string): void {
   getDb().runSync(
-    'UPDATE session_segments SET ended_at = ? WHERE id = ?',
+    'UPDATE session_segments SET ended_at = ?, synced = 0 WHERE id = ?',
     endedAt,
     id,
   );
@@ -98,8 +105,8 @@ export function createAttempt(
   ostinatoBroke: boolean,
 ): void {
   getDb().runSync(
-    `INSERT INTO attempts (id, session_segment_id, curriculum_item_id, ostinato, tempo, mistakes, ostinato_broke)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO attempts (id, session_segment_id, curriculum_item_id, ostinato, tempo, mistakes, ostinato_broke, synced)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 0)`,
     id,
     segmentId,
     curriculumItemId,
@@ -111,12 +118,16 @@ export function createAttempt(
 }
 
 export function deleteAttempt(id: string): void {
-  getDb().runSync('DELETE FROM attempts WHERE id = ?', id);
+  // Soft delete for sync
+  getDb().runSync(
+    "UPDATE attempts SET deleted_at = datetime('now'), synced = 0 WHERE id = ?",
+    id,
+  );
 }
 
 export function getAttemptsBySegment(segmentId: string): AttemptRow[] {
   return getDb().getAllSync<AttemptRow>(
-    'SELECT * FROM attempts WHERE session_segment_id = ? ORDER BY created_at ASC',
+    'SELECT * FROM attempts WHERE session_segment_id = ? AND deleted_at IS NULL ORDER BY created_at ASC',
     segmentId,
   );
 }
@@ -126,7 +137,7 @@ export function getAttemptsBySegmentAndOstinato(
   ostinato: Ostinato,
 ): AttemptRow[] {
   return getDb().getAllSync<AttemptRow>(
-    'SELECT * FROM attempts WHERE session_segment_id = ? AND ostinato = ? ORDER BY created_at ASC',
+    'SELECT * FROM attempts WHERE session_segment_id = ? AND ostinato = ? AND deleted_at IS NULL ORDER BY created_at ASC',
     segmentId,
     ostinato,
   );
@@ -145,7 +156,7 @@ export function getOstinatoStatusesForSegment(
        COUNT(*) as attempt_count,
        MAX(CASE WHEN mistakes <= 3 AND ostinato_broke = 0 THEN 1 ELSE 0 END) as has_passing
      FROM attempts
-     WHERE session_segment_id = ?
+     WHERE session_segment_id = ? AND deleted_at IS NULL
      GROUP BY ostinato`,
     segmentId,
   );
@@ -175,7 +186,7 @@ export function getSegmentSummary(segmentId: string): {
        COUNT(DISTINCT CASE WHEN mistakes <= 3 AND ostinato_broke = 0 THEN ostinato END) as ostinatos_passed,
        ROUND(AVG(mistakes), 1) as avg_mistakes
      FROM attempts
-     WHERE session_segment_id = ?`,
+     WHERE session_segment_id = ? AND deleted_at IS NULL`,
     segmentId,
   );
 
@@ -213,7 +224,7 @@ export function getAllSessions(): {
        COUNT(DISTINCT ss.id) as segment_count,
        (SELECT ROUND(SUM(
          (julianday(COALESCE(ss2.ended_at, datetime('now'))) - julianday(ss2.started_at)) * 1440
-       )) FROM session_segments ss2 WHERE ss2.session_id = ps.id) as duration_minutes,
+       )) FROM session_segments ss2 WHERE ss2.session_id = ps.id AND ss2.deleted_at IS NULL) as duration_minutes,
        COUNT(a.id) as total_attempts,
        ROUND(AVG(a.mistakes), 1) as avg_mistakes,
        MIN(a.tempo) as min_tempo,
@@ -221,10 +232,11 @@ export function getAllSessions(): {
        COUNT(DISTINCT CASE WHEN a.mistakes <= 3 AND a.ostinato_broke = 0 THEN a.ostinato END) as ostinatos_passed,
        SUM(CASE WHEN a.ostinato_broke = 1 THEN 1 ELSE 0 END) as total_breaks
      FROM practice_sessions ps
-     LEFT JOIN session_segments ss ON ss.session_id = ps.id
-     LEFT JOIN attempts a ON a.session_segment_id = ss.id
+     LEFT JOIN session_segments ss ON ss.session_id = ps.id AND ss.deleted_at IS NULL
+     LEFT JOIN attempts a ON a.session_segment_id = ss.id AND a.deleted_at IS NULL
      LEFT JOIN curriculum_items ci ON ci.id = a.curriculum_item_id
      LEFT JOIN curriculum_items ci2 ON ci2.id = ps.curriculum_item_id
+     WHERE ps.deleted_at IS NULL
      GROUP BY ps.id
      HAVING COUNT(a.id) > 0 OR ps.notes IS NOT NULL OR ps.video_url IS NOT NULL
      ORDER BY ps.started_at DESC`,
@@ -233,7 +245,7 @@ export function getAllSessions(): {
 
 export function getSessionSegments(sessionId: string): SessionSegmentRow[] {
   return getDb().getAllSync<SessionSegmentRow>(
-    'SELECT * FROM session_segments WHERE session_id = ? ORDER BY segment_number',
+    'SELECT * FROM session_segments WHERE session_id = ? AND deleted_at IS NULL ORDER BY segment_number',
     sessionId,
   );
 }
@@ -243,7 +255,7 @@ export function getSessionAttemptsGrouped(sessionId: string): AttemptRow[] {
     `SELECT a.*
      FROM attempts a
      JOIN session_segments ss ON a.session_segment_id = ss.id
-     WHERE ss.session_id = ?
+     WHERE ss.session_id = ? AND a.deleted_at IS NULL AND ss.deleted_at IS NULL
      ORDER BY ss.segment_number, a.ostinato, a.created_at`,
     sessionId,
   );
@@ -252,7 +264,7 @@ export function getSessionAttemptsGrouped(sessionId: string): AttemptRow[] {
 export function getSessionCurriculumItemId(sessionId: string): string | null {
   // Check session-level curriculum first, then fall back to attempts
   const session = getDb().getFirstSync<{ curriculum_item_id: string | null }>(
-    'SELECT curriculum_item_id FROM practice_sessions WHERE id = ?',
+    'SELECT curriculum_item_id FROM practice_sessions WHERE id = ? AND deleted_at IS NULL',
     sessionId,
   );
   if (session?.curriculum_item_id) return session.curriculum_item_id;
@@ -261,7 +273,7 @@ export function getSessionCurriculumItemId(sessionId: string): string | null {
     `SELECT DISTINCT a.curriculum_item_id
      FROM attempts a
      JOIN session_segments ss ON a.session_segment_id = ss.id
-     WHERE ss.session_id = ?
+     WHERE ss.session_id = ? AND a.deleted_at IS NULL
      LIMIT 1`,
     sessionId,
   );
@@ -272,7 +284,7 @@ export function getSessionCurriculumItemId(sessionId: string): string | null {
 
 export function getSessionById(id: string): { id: string; started_at: string; ended_at: string | null } | null {
   return getDb().getFirstSync<{ id: string; started_at: string; ended_at: string | null }>(
-    'SELECT id, started_at, ended_at FROM practice_sessions WHERE id = ?',
+    'SELECT id, started_at, ended_at FROM practice_sessions WHERE id = ? AND deleted_at IS NULL',
     id,
   );
 }
@@ -287,7 +299,7 @@ export function getSessionNotes(id: string): string | null {
 
 export function updateSessionNotes(id: string, notes: string): void {
   getDb().runSync(
-    'UPDATE practice_sessions SET notes = ? WHERE id = ?',
+    'UPDATE practice_sessions SET notes = ?, synced = 0 WHERE id = ?',
     notes || null,
     id,
   );
@@ -303,39 +315,52 @@ export function getSessionVideoUrl(id: string): string | null {
 
 export function updateSessionVideoUrl(id: string, videoUrl: string): void {
   getDb().runSync(
-    'UPDATE practice_sessions SET video_url = ? WHERE id = ?',
+    'UPDATE practice_sessions SET video_url = ?, synced = 0 WHERE id = ?',
     videoUrl || null,
     id,
   );
 }
 
 export function reopenSession(id: string): void {
-  getDb().runSync('UPDATE practice_sessions SET ended_at = NULL WHERE id = ?', id);
+  getDb().runSync('UPDATE practice_sessions SET ended_at = NULL, synced = 0 WHERE id = ?', id);
 }
 
 export function deleteSession(id: string): void {
   const db = getDb();
+  // Soft delete cascade: attempts → segments → session
   db.runSync(
-    `DELETE FROM attempts WHERE session_segment_id IN (
-       SELECT id FROM session_segments WHERE session_id = ?
-     )`,
+    `UPDATE attempts SET deleted_at = datetime('now'), synced = 0
+     WHERE session_segment_id IN (SELECT id FROM session_segments WHERE session_id = ?)
+       AND deleted_at IS NULL`,
     id,
   );
-  db.runSync('DELETE FROM session_segments WHERE session_id = ?', id);
-  db.runSync('DELETE FROM practice_sessions WHERE id = ?', id);
+  db.runSync(
+    "UPDATE session_segments SET deleted_at = datetime('now'), synced = 0 WHERE session_id = ? AND deleted_at IS NULL",
+    id,
+  );
+  db.runSync(
+    "UPDATE practice_sessions SET deleted_at = datetime('now'), synced = 0 WHERE id = ?",
+    id,
+  );
 }
 
 export function getLastSegmentForSession(sessionId: string): SessionSegmentRow | null {
   return getDb().getFirstSync<SessionSegmentRow>(
-    'SELECT * FROM session_segments WHERE session_id = ? ORDER BY segment_number DESC LIMIT 1',
+    'SELECT * FROM session_segments WHERE session_id = ? AND deleted_at IS NULL ORDER BY segment_number DESC LIMIT 1',
     sessionId,
   );
 }
 
 export function deleteSegment(id: string): void {
   const db = getDb();
-  db.runSync('DELETE FROM attempts WHERE session_segment_id = ?', id);
-  db.runSync('DELETE FROM session_segments WHERE id = ?', id);
+  db.runSync(
+    "UPDATE attempts SET deleted_at = datetime('now'), synced = 0 WHERE session_segment_id = ? AND deleted_at IS NULL",
+    id,
+  );
+  db.runSync(
+    "UPDATE session_segments SET deleted_at = datetime('now'), synced = 0 WHERE id = ?",
+    id,
+  );
 }
 
 // ── Progress Dashboard ──────────────────────────────────────────────
@@ -354,17 +379,20 @@ export function getOverallStats(): {
   }>(
     `SELECT
        (SELECT COUNT(*) FROM practice_sessions ps2
-        WHERE EXISTS (SELECT 1 FROM session_segments ss2
+        WHERE ps2.deleted_at IS NULL
+          AND EXISTS (SELECT 1 FROM session_segments ss2
           JOIN attempts a2 ON a2.session_segment_id = ss2.id
-          WHERE ss2.session_id = ps2.id)) as total_sessions,
+          WHERE ss2.session_id = ps2.id AND ss2.deleted_at IS NULL AND a2.deleted_at IS NULL)) as total_sessions,
        COUNT(a.id) as total_attempts,
        (SELECT ROUND(SUM(
          (julianday(COALESCE(ss3.ended_at, datetime('now'))) - julianday(ss3.started_at)) * 1440
        )) FROM session_segments ss3
-        WHERE EXISTS (SELECT 1 FROM attempts a3
-          WHERE a3.session_segment_id = ss3.id)) as total_minutes,
+        WHERE ss3.deleted_at IS NULL
+          AND EXISTS (SELECT 1 FROM attempts a3
+          WHERE a3.session_segment_id = ss3.id AND a3.deleted_at IS NULL)) as total_minutes,
        ROUND(AVG(a.mistakes), 1) as avg_mistakes
-     FROM attempts a`,
+     FROM attempts a
+     WHERE a.deleted_at IS NULL`,
   );
 
   return {
@@ -390,7 +418,7 @@ export function getCurriculumProgress(): {
        COUNT(DISTINCT CASE WHEN a.mistakes <= 3 AND a.ostinato_broke = 0 THEN a.ostinato END) as ostinatosPassed,
        MAX(a.created_at) as lastPracticed
      FROM curriculum_items ci
-     LEFT JOIN attempts a ON a.curriculum_item_id = ci.id
+     LEFT JOIN attempts a ON a.curriculum_item_id = ci.id AND a.deleted_at IS NULL
      GROUP BY ci.id
      ORDER BY ci.sort_order`,
   );
@@ -415,22 +443,25 @@ export function getMasteryGrid(
          SELECT mistakes FROM attempts a2
          WHERE a2.curriculum_item_id = a.curriculum_item_id
            AND a2.ostinato = a.ostinato
+           AND a2.deleted_at IS NULL
          ORDER BY a2.created_at DESC LIMIT 10
        ) sub) as recent_avg,
        (SELECT COUNT(*) FROM (
          SELECT id FROM attempts a3
          WHERE a3.curriculum_item_id = a.curriculum_item_id
            AND a3.ostinato = a.ostinato
+           AND a3.deleted_at IS NULL
          ORDER BY a3.created_at DESC LIMIT 10
        )) as recent_count,
        (SELECT SUM(sub2.ostinato_broke) FROM (
          SELECT ostinato_broke FROM attempts a4
          WHERE a4.curriculum_item_id = a.curriculum_item_id
            AND a4.ostinato = a.ostinato
+           AND a4.deleted_at IS NULL
          ORDER BY a4.created_at DESC LIMIT 10
        ) sub2) as recent_breaks
      FROM attempts a
-     WHERE a.curriculum_item_id = ?
+     WHERE a.curriculum_item_id = ? AND a.deleted_at IS NULL
      GROUP BY a.ostinato`,
     curriculumItemId,
   );
@@ -468,7 +499,7 @@ export function getTempoHistory(curriculumItemId: string): {
          date(a.created_at) as date,
          CASE WHEN a.mistakes <= 3 AND a.ostinato_broke = 0 THEN 1 ELSE 0 END as passed
        FROM attempts a
-       WHERE a.curriculum_item_id = ?
+       WHERE a.curriculum_item_id = ? AND a.deleted_at IS NULL
        ORDER BY a.created_at`,
       curriculumItemId,
     )
@@ -488,7 +519,7 @@ export function getAggregateTempoHistory(curriculumItemId: string): {
        MIN(a.tempo) as minTempo,
        MAX(a.tempo) as maxTempo
      FROM attempts a
-     WHERE a.curriculum_item_id = ?
+     WHERE a.curriculum_item_id = ? AND a.deleted_at IS NULL
      GROUP BY date(a.created_at)
      ORDER BY date`,
     curriculumItemId,
@@ -500,6 +531,7 @@ export function getPracticeDays(): string[] {
     .getAllSync<{ day: string }>(
       `SELECT DISTINCT date(started_at) as day
        FROM practice_sessions
+       WHERE deleted_at IS NULL
        ORDER BY day`,
     )
     .map((r) => r.day);
@@ -561,6 +593,174 @@ export function getPreference(key: string): string | null {
 }
 
 export function setPreference(key: string, value: string): void {
+  getDb().runSync(
+    'INSERT OR REPLACE INTO user_preferences (key, value) VALUES (?, ?)',
+    key,
+    value,
+  );
+}
+
+// ── Sync Helpers ────────────────────────────────────────────────────
+
+export function getUnsyncedSessions(): {
+  id: string;
+  curriculum_item_id: string | null;
+  started_at: string;
+  ended_at: string | null;
+  notes: string | null;
+  video_url: string | null;
+  deleted_at: string | null;
+  created_at: string;
+}[] {
+  return getDb().getAllSync(
+    'SELECT id, curriculum_item_id, started_at, ended_at, notes, video_url, deleted_at, created_at FROM practice_sessions WHERE synced = 0',
+  );
+}
+
+export function getUnsyncedSegments(): {
+  id: string;
+  session_id: string;
+  segment_number: number;
+  started_at: string;
+  ended_at: string | null;
+  deleted_at: string | null;
+  created_at: string;
+}[] {
+  return getDb().getAllSync(
+    'SELECT id, session_id, segment_number, started_at, ended_at, deleted_at, created_at FROM session_segments WHERE synced = 0',
+  );
+}
+
+export function getUnsyncedAttempts(): {
+  id: string;
+  session_segment_id: string;
+  curriculum_item_id: string;
+  ostinato: string;
+  tempo: number;
+  mistakes: number;
+  ostinato_broke: number;
+  notes: string | null;
+  deleted_at: string | null;
+  created_at: string;
+}[] {
+  return getDb().getAllSync(
+    'SELECT id, session_segment_id, curriculum_item_id, ostinato, tempo, mistakes, ostinato_broke, notes, deleted_at, created_at FROM attempts WHERE synced = 0',
+  );
+}
+
+export function markSessionsSynced(ids: string[]): void {
+  if (ids.length === 0) return;
+  const placeholders = ids.map(() => '?').join(',');
+  getDb().runSync(
+    `UPDATE practice_sessions SET synced = 1 WHERE id IN (${placeholders})`,
+    ...ids,
+  );
+}
+
+export function markSegmentsSynced(ids: string[]): void {
+  if (ids.length === 0) return;
+  const placeholders = ids.map(() => '?').join(',');
+  getDb().runSync(
+    `UPDATE session_segments SET synced = 1 WHERE id IN (${placeholders})`,
+    ...ids,
+  );
+}
+
+export function markAttemptsSynced(ids: string[]): void {
+  if (ids.length === 0) return;
+  const placeholders = ids.map(() => '?').join(',');
+  getDb().runSync(
+    `UPDATE attempts SET synced = 1 WHERE id IN (${placeholders})`,
+    ...ids,
+  );
+}
+
+export function upsertSessionFromRemote(row: {
+  id: string;
+  curriculum_item_id: string | null;
+  started_at: string;
+  ended_at: string | null;
+  notes: string | null;
+  video_url: string | null;
+  deleted_at: string | null;
+  created_at: string;
+}): void {
+  getDb().runSync(
+    `INSERT INTO practice_sessions (id, curriculum_item_id, started_at, ended_at, notes, video_url, deleted_at, synced, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       curriculum_item_id = excluded.curriculum_item_id,
+       started_at = excluded.started_at,
+       ended_at = excluded.ended_at,
+       notes = excluded.notes,
+       video_url = excluded.video_url,
+       deleted_at = excluded.deleted_at,
+       synced = 1`,
+    row.id, row.curriculum_item_id, row.started_at, row.ended_at,
+    row.notes, row.video_url, row.deleted_at, row.created_at,
+  );
+}
+
+export function upsertSegmentFromRemote(row: {
+  id: string;
+  session_id: string;
+  segment_number: number;
+  started_at: string;
+  ended_at: string | null;
+  deleted_at: string | null;
+  created_at: string;
+}): void {
+  getDb().runSync(
+    `INSERT INTO session_segments (id, session_id, segment_number, started_at, ended_at, deleted_at, synced, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, 1, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       session_id = excluded.session_id,
+       segment_number = excluded.segment_number,
+       started_at = excluded.started_at,
+       ended_at = excluded.ended_at,
+       deleted_at = excluded.deleted_at,
+       synced = 1`,
+    row.id, row.session_id, row.segment_number, row.started_at,
+    row.ended_at, row.deleted_at, row.created_at,
+  );
+}
+
+export function upsertAttemptFromRemote(row: {
+  id: string;
+  session_segment_id: string;
+  curriculum_item_id: string;
+  ostinato: string;
+  tempo: number;
+  mistakes: number;
+  ostinato_broke: boolean;
+  notes: string | null;
+  deleted_at: string | null;
+  created_at: string;
+}): void {
+  getDb().runSync(
+    `INSERT INTO attempts (id, session_segment_id, curriculum_item_id, ostinato, tempo, mistakes, ostinato_broke, notes, deleted_at, synced, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       session_segment_id = excluded.session_segment_id,
+       curriculum_item_id = excluded.curriculum_item_id,
+       ostinato = excluded.ostinato,
+       tempo = excluded.tempo,
+       mistakes = excluded.mistakes,
+       ostinato_broke = excluded.ostinato_broke,
+       notes = excluded.notes,
+       deleted_at = excluded.deleted_at,
+       synced = 1`,
+    row.id, row.session_segment_id, row.curriculum_item_id, row.ostinato,
+    row.tempo, row.mistakes, row.ostinato_broke ? 1 : 0, row.notes,
+    row.deleted_at, row.created_at,
+  );
+}
+
+export function getAllPreferences(): { key: string; value: string }[] {
+  return getDb().getAllSync('SELECT key, value FROM user_preferences');
+}
+
+export function upsertPreferenceFromRemote(key: string, value: string): void {
   getDb().runSync(
     'INSERT OR REPLACE INTO user_preferences (key, value) VALUES (?, ?)',
     key,
