@@ -37,6 +37,12 @@ export const SHEET_MUSIC: SheetMusicEntry[] = [
     curriculumItemId: 'rhythm-series-2',
     asset: require('../mxl/rhythm-series-2.musicxml'),
   },
+  {
+    id: 'rhythm-series-3-prep',
+    name: 'Rhythm Series 3 Prep',
+    curriculumItemId: 'rhythm-series-3-prep',
+    asset: require('../mxl/rhythm-series-3-prep.musicxml'),
+  },
 ];
 
 /** Get the sheet music entry for a curriculum item, or null */

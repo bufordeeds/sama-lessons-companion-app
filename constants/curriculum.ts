@@ -40,6 +40,16 @@ export const CURRICULUM_ITEMS = [
     ostinatos: ['1A', '2A', '3A', '4A', '1B', '2B', '3B', '4B'] as const,
   },
   {
+    id: 'rhythm-series-3-prep',
+    name: 'Rhythm Series 3 Prep',
+    type: 'rhythm_series' as const,
+    series_number: 3,
+    description:
+      'Preparatory exercises for Rhythm Series 3.',
+    sort_order: 5,
+    ostinatos: ['1A', '2A', '3A', '4A', '1B', '2B', '3B', '4B'] as const,
+  },
+  {
     id: 'practice-pad',
     name: 'Practice Pad Fundamentals',
     type: 'fundamentals' as const,
