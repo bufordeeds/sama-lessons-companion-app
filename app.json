@@ -33,6 +33,7 @@
       "expo-apple-authentication"
     ],
     "ios": {
+      "buildNumber": "2",
       "supportsTablet": true,
       "bundleIdentifier": "com.bufordeeds8.samalessonscompanionapp",
       "usesAppleSignIn": true,
