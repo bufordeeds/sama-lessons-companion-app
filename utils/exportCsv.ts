@@ -1,9 +1,8 @@
+import { Share } from 'react-native';
+import { File, Paths } from 'expo-file-system/next';
 import { getDb } from '@/db/queries';
 
 export async function exportSessionsCsv(): Promise<void> {
-  const FileSystem = await import('expo-file-system');
-  const Sharing = await import('expo-sharing');
-
   const rows = getDb().getAllSync<{
     date: string;
     session_id: string;
@@ -40,14 +39,8 @@ export async function exportSessionsCsv(): Promise<void> {
   );
   const csv = [header, ...csvRows].join('\n');
 
-  const fileUri = `${FileSystem.cacheDirectory}sama-practice-export.csv`;
-  await FileSystem.writeAsStringAsync(fileUri, csv, {
-    encoding: FileSystem.EncodingType.UTF8,
-  });
+  const file = new File(Paths.cache, 'sama-practice-export.csv');
+  file.write(csv);
 
-  await Sharing.shareAsync(fileUri, {
-    mimeType: 'text/csv',
-    dialogTitle: 'Export Practice Sessions',
-    UTI: 'public.comma-separated-values-text',
-  });
+  await Share.share({ url: file.uri, title: 'SAMA Practice Export' });
 }
