@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useLayoutEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { StyleSheet, View as RNView } from 'react-native';
 import { Text } from '@/components/Themed';
-import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { useLocalSearchParams, Stack } from 'expo-router';
 import { Pressable } from 'react-native';
 import { getSheetById } from '@/constants/sheetMusic';
 import { NotationView } from '@/components/practice/NotationView';
@@ -17,14 +17,6 @@ import { colors, spacing, fontSize, borderRadius, touchTarget } from '@/constant
 export default function SheetMusicScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const sheet = getSheetById(id ?? '');
-  const navigation = useNavigation();
-
-  // Set the header title to the sheet name
-  useLayoutEffect(() => {
-    if (sheet) {
-      navigation.setOptions({ title: sheet.name });
-    }
-  }, [navigation, sheet]);
 
   const activeSession = useSessionStore((s) => s.activeSession);
   const lastLoggedAttemptId = useSessionStore((s) => s.lastLoggedAttemptId);
@@ -72,6 +64,7 @@ export default function SheetMusicScreen() {
 
   return (
     <RNView style={styles.container}>
+      <Stack.Screen options={{ title: sheet.name }} />
       {/* Notation area — takes all available space */}
       <RNView style={styles.notationArea}>
         <NotationView mxlAsset={sheet.asset} />

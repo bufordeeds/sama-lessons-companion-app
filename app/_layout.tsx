@@ -64,6 +64,7 @@ function RootLayoutNav() {
             headerBackTitle: 'History',
             headerStyle: { backgroundColor: colors.background },
             headerTintColor: colors.text,
+            fullScreenGestureEnabled: true,
           }}
         />
         <Stack.Screen
@@ -73,6 +74,7 @@ function RootLayoutNav() {
             headerBackTitle: 'Back',
             headerStyle: { backgroundColor: colors.background },
             headerTintColor: colors.text,
+            fullScreenGestureEnabled: true,
           }}
         />
       </Stack>

@@ -3,8 +3,7 @@ import { StyleSheet, ScrollView, View as RNView, Pressable, Alert, TextInput } f
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from '@/components/Themed';
-import { Swipeable } from 'react-native-gesture-handler';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Swipeable, GestureHandlerRootView } from 'react-native-gesture-handler';
 import dayjs from 'dayjs';
 import { ALL_OSTINATOS, type Ostinato } from '@/constants/curriculum';
 import type { AttemptRow, SessionSegmentRow } from '@/types';
@@ -77,6 +76,7 @@ function SwipeableSegment({
   );
 
   return (
+    <GestureHandlerRootView>
     <Swipeable
       ref={swipeableRef}
       renderRightActions={onDelete ? renderRightActions : undefined}
@@ -143,6 +143,7 @@ function SwipeableSegment({
         )}
       </RNView>
     </Swipeable>
+    </GestureHandlerRootView>
   );
 }
 
@@ -179,7 +180,7 @@ export function SessionDetail({
   }
 
   return (
-    <GestureHandlerRootView style={styles.gestureRoot}>
+    <RNView style={styles.gestureRoot}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
@@ -260,7 +261,7 @@ export function SessionDetail({
           />
         ))}
       </ScrollView>
-    </GestureHandlerRootView>
+    </RNView>
   );
 }
 
