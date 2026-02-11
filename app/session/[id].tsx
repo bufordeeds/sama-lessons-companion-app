@@ -25,6 +25,7 @@ export default function SessionDetailScreen() {
   const router = useRouter();
   const activeSession = useSessionStore((s) => s.activeSession);
   const resumeSession = useSessionStore((s) => s.resumeSession);
+  const resumeSegment = useSessionStore((s) => s.resumeSegment);
 
   const [segments, setSegments] = useState<SessionSegmentRow[]>([]);
   const [attempts, setAttempts] = useState<AttemptRow[]>([]);
@@ -76,10 +77,20 @@ export default function SessionDetailScreen() {
   }, [id]);
 
   const handleContinue = () => {
-    if (!id) return;
+    if (!id || activeSession) return;
     resumeSession(id);
     router.replace('/(tabs)');
   };
+
+  const handleTapSegment = useCallback((segmentId: string) => {
+    if (!id) return;
+    if (activeSession) {
+      Alert.alert('Session Active', 'End your current session before resuming a segment.');
+      return;
+    }
+    resumeSegment(id, segmentId);
+    router.replace('/(tabs)');
+  }, [id, activeSession, resumeSegment, router]);
 
   const handleDelete = () => {
     if (!id) return;
@@ -109,7 +120,7 @@ export default function SessionDetailScreen() {
   }
 
   const title = `${dayjs(startedAt).format('MMM D')} — ${curriculumName}`;
-  const canContinue = !activeSession;
+  const isDisabled = !!activeSession;
 
   return (
     <>
@@ -124,13 +135,21 @@ export default function SessionDetailScreen() {
         onDeleteSegment={handleDeleteSegment}
         onUpdateNotes={handleUpdateNotes}
         onUpdateVideoUrl={handleUpdateVideoUrl}
+        onTapSegment={handleTapSegment}
       />
       <RNView style={styles.actionBar}>
-        {canContinue && (
-          <Pressable style={styles.continueButton} onPress={handleContinue}>
+        <RNView style={{ flex: 1 }}>
+          <Pressable
+            style={[styles.continueButton, isDisabled && styles.continueButtonDisabled]}
+            onPress={handleContinue}
+            disabled={isDisabled}
+          >
             <Text style={styles.continueButtonText}>Continue Session</Text>
           </Pressable>
-        )}
+          {isDisabled && (
+            <Text style={styles.continueButtonHint}>End current session first</Text>
+          )}
+        </RNView>
         <Pressable style={styles.deleteButton} onPress={handleDelete}>
           <Text style={styles.deleteButtonText}>Delete Session</Text>
         </Pressable>
@@ -169,10 +188,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: spacing.md,
   },
+  continueButtonDisabled: {
+    opacity: 0.4,
+  },
   continueButtonText: {
     fontSize: fontSize.md,
     fontWeight: '700',
     color: colors.background,
+  },
+  continueButtonHint: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    textAlign: 'center',
+    marginTop: spacing.xs,
   },
   deleteButton: {
     minHeight: touchTarget.min,

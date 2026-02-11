@@ -21,6 +21,7 @@ interface SessionDetailProps {
   onDeleteSegment?: (segmentId: string) => void;
   onUpdateNotes?: (notes: string) => void;
   onUpdateVideoUrl?: (url: string) => void;
+  onTapSegment?: (segmentId: string) => void;
 }
 
 function formatSegmentDuration(segment: SessionSegmentRow): string {
@@ -38,10 +39,12 @@ function SwipeableSegment({
   segment,
   segAttempts,
   onDelete,
+  onTap,
 }: {
   segment: SessionSegmentRow;
   segAttempts: AttemptRow[];
   onDelete?: (segmentId: string) => void;
+  onTap?: (segmentId: string) => void;
 }) {
   const swipeableRef = useRef<Swipeable>(null);
 
@@ -82,11 +85,20 @@ function SwipeableSegment({
       renderRightActions={onDelete ? renderRightActions : undefined}
       overshootRight={false}
     >
-      <RNView style={styles.segmentBlock}>
-        <Text style={styles.segmentTitle}>
-          Segment {segment.segment_number}
-          {duration ? ` (${duration})` : ''}
-        </Text>
+      <Pressable
+        style={styles.segmentBlock}
+        onPress={onTap ? () => onTap(segment.id) : undefined}
+        disabled={!onTap}
+      >
+        <RNView style={styles.segmentTitleRow}>
+          <Text style={styles.segmentTitle}>
+            Segment {segment.segment_number}
+            {duration ? ` (${duration})` : ''}
+          </Text>
+          {onTap && (
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          )}
+        </RNView>
 
         {segAttempts.length === 0 ? (
           <Text style={styles.emptySegment}>No attempts</Text>
@@ -141,7 +153,7 @@ function SwipeableSegment({
             })}
           </>
         )}
-      </RNView>
+      </Pressable>
     </Swipeable>
     </GestureHandlerRootView>
   );
@@ -157,6 +169,7 @@ export function SessionDetail({
   onDeleteSegment,
   onUpdateNotes,
   onUpdateVideoUrl,
+  onTapSegment,
 }: SessionDetailProps) {
   const date = dayjs(startedAt).format('MMM D, YYYY');
   const [isEditingNotes, setIsEditingNotes] = useState(false);
@@ -258,6 +271,7 @@ export function SessionDetail({
             segment={segment}
             segAttempts={attemptsBySegment.get(segment.id) ?? []}
             onDelete={onDeleteSegment}
+            onTap={onTapSegment}
           />
         ))}
       </ScrollView>
@@ -296,6 +310,11 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
     gap: spacing.sm,
+  },
+  segmentTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   segmentTitle: {
     fontSize: fontSize.lg,

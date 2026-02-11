@@ -348,6 +348,17 @@ export function deleteSession(id: string): void {
   );
 }
 
+export function getSegmentById(id: string): SessionSegmentRow | null {
+  return getDb().getFirstSync<SessionSegmentRow>(
+    'SELECT * FROM session_segments WHERE id = ? AND deleted_at IS NULL',
+    id,
+  );
+}
+
+export function reopenSegment(id: string): void {
+  getDb().runSync('UPDATE session_segments SET ended_at = NULL, synced = 0 WHERE id = ?', id);
+}
+
 export function getLastSegmentForSession(sessionId: string): SessionSegmentRow | null {
   return getDb().getFirstSync<SessionSegmentRow>(
     'SELECT * FROM session_segments WHERE session_id = ? AND deleted_at IS NULL ORDER BY segment_number DESC LIMIT 1',
