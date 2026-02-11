@@ -1,12 +1,5 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, Pressable } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withDelay,
-  runOnJS,
-} from 'react-native-reanimated';
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet, Pressable, Animated } from 'react-native';
 import { Text } from '@/components/Themed';
 import { colors, spacing, fontSize, borderRadius } from '@/constants/theme';
 
@@ -17,33 +10,43 @@ interface UndoBannerProps {
 }
 
 export function UndoBanner({ visible, onUndo, onDismiss }: UndoBannerProps) {
-  const translateY = useSharedValue(80);
+  const translateY = useRef(new Animated.Value(80)).current;
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     if (visible) {
-      translateY.value = withTiming(0, { duration: 250 });
-      // Auto-dismiss after 5 seconds
-      translateY.value = withDelay(
-        5000,
-        withTiming(80, { duration: 250 }, (finished) => {
-          if (finished) {
-            runOnJS(onDismiss)();
-          }
-        }),
-      );
-    } else {
-      translateY.value = withTiming(80, { duration: 250 });
-    }
-  }, [visible]);
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }));
+      timerRef.current = setTimeout(() => {
+        Animated.timing(translateY, {
+          toValue: 80,
+          duration: 250,
+          useNativeDriver: true,
+        }).start(({ finished }) => {
+          if (finished) onDismiss();
+        });
+      }, 5000);
+    } else {
+      Animated.timing(translateY, {
+        toValue: 80,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    }
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [visible]);
 
   if (!visible) return null;
 
   return (
-    <Animated.View style={[styles.container, animatedStyle]}>
+    <Animated.View style={[styles.container, { transform: [{ translateY }] }]}>
       <Text style={styles.text}>Attempt logged</Text>
       <Pressable style={styles.undoButton} onPress={onUndo}>
         <Text style={styles.undoText}>UNDO</Text>
