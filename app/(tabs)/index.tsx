@@ -20,7 +20,6 @@ import { AttemptLogger } from '@/components/practice/AttemptLogger';
 import { AttemptList } from '@/components/practice/AttemptList';
 import { SessionTimer } from '@/components/practice/SessionTimer';
 import { UndoBanner } from '@/components/practice/UndoBanner';
-import { SheetMusicLibrary } from '@/components/practice/SheetMusicLibrary';
 import { getSheetForCurriculum } from '@/constants/sheetMusic';
 import type { CurriculumItemRow } from '@/types';
 import type { Ostinato } from '@/constants/curriculum';
@@ -294,10 +293,6 @@ export default function PracticeScreen() {
       <Pressable style={styles.startButton} onPress={handleStartSession}>
         <Text style={styles.startButtonText}>Start Practice</Text>
       </Pressable>
-
-      <RNView style={styles.librarySection}>
-        <SheetMusicLibrary />
-      </RNView>
     </ScrollView>
   );
 }
@@ -432,10 +427,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xl,
     fontWeight: '700',
     color: colors.background,
-  },
-  librarySection: {
-    width: '100%',
-    marginTop: spacing.xxl,
   },
   sheetMusicButton: {
     backgroundColor: colors.surface,

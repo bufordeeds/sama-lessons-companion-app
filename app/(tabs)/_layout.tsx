@@ -60,6 +60,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="music"
+        options={{
+          title: 'Music',
+          tabBarIcon: ({ color }) => <TabBarIcon name="library-outline" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="history"
         options={{
           title: 'History',
@@ -71,6 +78,13 @@ export default function TabLayout() {
         options={{
           title: 'Progress',
           tabBarIcon: ({ color }) => <TabBarIcon name="stats-chart" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: 'Settings',
+          tabBarIcon: ({ color }) => <TabBarIcon name="settings-outline" color={color} />,
         }}
       />
     </Tabs>
