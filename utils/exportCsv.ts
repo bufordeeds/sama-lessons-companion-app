@@ -3,7 +3,7 @@ import { File, Paths } from 'expo-file-system/next';
 import { getDb } from '@/db/queries';
 
 export async function exportSessionsCsv(): Promise<void> {
-  const rows = getDb().getAllSync<{
+  const rows = await getDb().getAllAsync<{
     date: string;
     session_id: string;
     curriculum_item: string;

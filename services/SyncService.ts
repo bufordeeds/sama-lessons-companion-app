@@ -37,7 +37,7 @@ class SyncServiceClass {
     const userId = session.user.id;
 
     // Push sessions
-    const sessions = queries.getUnsyncedSessions();
+    const sessions = await queries.getUnsyncedSessions();
     if (sessions.length > 0) {
       const rows = sessions.map((s) => ({
         id: s.id,
@@ -59,11 +59,11 @@ class SyncServiceClass {
         if (error) throw error;
       }
 
-      queries.markSessionsSynced(sessions.map((s) => s.id));
+      await queries.markSessionsSynced(sessions.map((s) => s.id));
     }
 
     // Push segments
-    const segments = queries.getUnsyncedSegments();
+    const segments = await queries.getUnsyncedSegments();
     if (segments.length > 0) {
       const rows = segments.map((s) => ({
         id: s.id,
@@ -84,11 +84,11 @@ class SyncServiceClass {
         if (error) throw error;
       }
 
-      queries.markSegmentsSynced(segments.map((s) => s.id));
+      await queries.markSegmentsSynced(segments.map((s) => s.id));
     }
 
     // Push attempts
-    const attempts = queries.getUnsyncedAttempts();
+    const attempts = await queries.getUnsyncedAttempts();
     if (attempts.length > 0) {
       const rows = attempts.map((a) => ({
         id: a.id,
@@ -112,11 +112,11 @@ class SyncServiceClass {
         if (error) throw error;
       }
 
-      queries.markAttemptsSynced(attempts.map((a) => a.id));
+      await queries.markAttemptsSynced(attempts.map((a) => a.id));
     }
 
     // Push preferences
-    const prefs = queries.getAllPreferences();
+    const prefs = await queries.getAllPreferences();
     if (prefs.length > 0) {
       // Filter out internal keys that shouldn't sync
       const syncable = prefs.filter(
@@ -143,7 +143,7 @@ class SyncServiceClass {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    const lastSync = queries.getPreference('last_sync_at') ?? '1970-01-01T00:00:00Z';
+    const lastSync = (await queries.getPreference('last_sync_at')) ?? '1970-01-01T00:00:00Z';
 
     // Pull sessions
     const { data: remoteSessions, error: sessErr } = await supabase
@@ -153,7 +153,7 @@ class SyncServiceClass {
     if (sessErr) throw sessErr;
 
     for (const s of remoteSessions ?? []) {
-      queries.upsertSessionFromRemote(s);
+      await queries.upsertSessionFromRemote(s);
     }
 
     // Pull segments
@@ -164,7 +164,7 @@ class SyncServiceClass {
     if (segErr) throw segErr;
 
     for (const s of remoteSegments ?? []) {
-      queries.upsertSegmentFromRemote(s);
+      await queries.upsertSegmentFromRemote(s);
     }
 
     // Pull attempts
@@ -175,7 +175,7 @@ class SyncServiceClass {
     if (attErr) throw attErr;
 
     for (const a of remoteAttempts ?? []) {
-      queries.upsertAttemptFromRemote(a);
+      await queries.upsertAttemptFromRemote(a);
     }
 
     // Pull preferences
@@ -188,12 +188,12 @@ class SyncServiceClass {
     for (const p of remotePrefs ?? []) {
       // Don't overwrite local seed keys
       if (!p.key.startsWith('practice_data_seeded')) {
-        queries.upsertPreferenceFromRemote(p.key, p.value);
+        await queries.upsertPreferenceFromRemote(p.key, p.value);
       }
     }
 
     // Update last sync timestamp
-    queries.setPreference('last_sync_at', new Date().toISOString());
+    await queries.setPreference('last_sync_at', new Date().toISOString());
   }
 
   /**
@@ -238,9 +238,9 @@ class SyncServiceClass {
     try {
       // Mark all local rows as unsynced so pushLocal picks them up
       const db = queries.getDb();
-      db.runSync('UPDATE practice_sessions SET synced = 0');
-      db.runSync('UPDATE session_segments SET synced = 0');
-      db.runSync('UPDATE attempts SET synced = 0');
+      await db.runAsync('UPDATE practice_sessions SET synced = 0');
+      await db.runAsync('UPDATE session_segments SET synced = 0');
+      await db.runAsync('UPDATE attempts SET synced = 0');
 
       await this.pushLocal();
       await this.pullRemote();

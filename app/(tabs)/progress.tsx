@@ -45,8 +45,8 @@ export default function ProgressScreen() {
     { ostinato: Ostinato; tempo: number; date: string; passed: boolean }[]
   >([]);
 
-  const loadData = useCallback(() => {
-    const items = getCurriculumProgress();
+  const loadData = useCallback(async () => {
+    const items = await getCurriculumProgress();
     setCurriculumItems(items);
 
     let currId = selectedCurriculumId;
@@ -56,14 +56,14 @@ export default function ProgressScreen() {
       setSelectedCurriculumId(currId);
     }
 
-    setOverallStats(getOverallStats());
+    setOverallStats(await getOverallStats());
     if (currId) {
-      setMasteryGrid(getMasteryGrid(currId));
-      setAggregateTempoData(getAggregateTempoHistory(currId));
-      setOstinatoTempoData(getTempoHistory(currId));
+      setMasteryGrid(await getMasteryGrid(currId));
+      setAggregateTempoData(await getAggregateTempoHistory(currId));
+      setOstinatoTempoData(await getTempoHistory(currId));
     }
-    setStreakStats(getStreakStats());
-    setPracticeDays(getPracticeDays());
+    setStreakStats(await getStreakStats());
+    setPracticeDays(await getPracticeDays());
   }, [selectedCurriculumId]);
 
   useFocusEffect(
@@ -73,11 +73,11 @@ export default function ProgressScreen() {
   );
 
   const handleSelectCurriculum = useCallback(
-    (id: string) => {
+    async (id: string) => {
       setSelectedCurriculumId(id);
-      setMasteryGrid(getMasteryGrid(id));
-      setAggregateTempoData(getAggregateTempoHistory(id));
-      setOstinatoTempoData(getTempoHistory(id));
+      setMasteryGrid(await getMasteryGrid(id));
+      setAggregateTempoData(await getAggregateTempoHistory(id));
+      setOstinatoTempoData(await getTempoHistory(id));
     },
     [],
   );

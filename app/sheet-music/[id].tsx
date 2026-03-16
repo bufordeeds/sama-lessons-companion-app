@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { StyleSheet, View as RNView } from 'react-native';
 import { Text } from '@/components/Themed';
 import { useLocalSearchParams, Stack } from 'expo-router';
@@ -24,9 +24,14 @@ export default function SheetMusicScreen() {
 
   const [loggerVisible, setLoggerVisible] = useState(false);
   const [soundPickerVisible, setSoundPickerVisible] = useState(false);
-  const [currentSoundId, setCurrentSoundId] = useState(
-    () => getPreference('metronome_sound') ?? DEFAULT_SOUND_ID,
-  );
+  const [currentSoundId, setCurrentSoundId] = useState(DEFAULT_SOUND_ID);
+
+  useEffect(() => {
+    (async () => {
+      const saved = await getPreference('metronome_sound');
+      if (saved) setCurrentSoundId(saved);
+    })();
+  }, []);
 
   // Local tempo for standalone use; session tempo overrides when active
   const [localTempo, setLocalTempo] = useState(100);

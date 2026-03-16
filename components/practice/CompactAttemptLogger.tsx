@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { StyleSheet, Pressable, Modal, ScrollView, View as RNView } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from '@/components/Themed';
@@ -31,9 +31,19 @@ export function CompactAttemptLogger({
     deleteAttempt,
   } = useSessionStore();
 
-  const ostinatoStatuses = useMemo(() => {
-    if (!activeSession) return new Map<Ostinato, { passed: boolean; attemptCount: number }>();
-    return getOstinatoStatusesForSegment(activeSession.currentSegmentId);
+  const [ostinatoStatuses, setOstinatoStatuses] = useState(
+    new Map<Ostinato, { passed: boolean; attemptCount: number }>(),
+  );
+
+  useEffect(() => {
+    if (!activeSession) {
+      setOstinatoStatuses(new Map());
+      return;
+    }
+    (async () => {
+      const statuses = await getOstinatoStatusesForSegment(activeSession.currentSegmentId);
+      setOstinatoStatuses(statuses);
+    })();
   }, [activeSession?.currentSegmentId, currentSegmentAttempts]);
 
   const filteredAttempts = useMemo(() => {

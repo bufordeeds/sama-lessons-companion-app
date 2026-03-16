@@ -1,7 +1,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-export function initializeDatabase(db: SQLiteDatabase): void {
-  db.execSync(`
+export async function initializeDatabase(db: SQLiteDatabase): Promise<void> {
+  await db.execAsync(`
     CREATE TABLE IF NOT EXISTS curriculum_items (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,

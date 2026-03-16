@@ -34,22 +34,22 @@ export default function SessionDetailScreen() {
   const [notes, setNotes] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
 
-  const loadData = useCallback(() => {
+  const loadData = useCallback(async () => {
     if (!id) return;
 
-    const segs = getSessionSegments(id);
+    const segs = await getSessionSegments(id);
     setSegments(segs);
     if (segs.length > 0) {
       setStartedAt(segs[0].started_at);
     }
 
-    setAttempts(getSessionAttemptsGrouped(id));
-    setNotes(getSessionNotes(id) ?? '');
-    setVideoUrl(getSessionVideoUrl(id) ?? '');
+    setAttempts(await getSessionAttemptsGrouped(id));
+    setNotes((await getSessionNotes(id)) ?? '');
+    setVideoUrl((await getSessionVideoUrl(id)) ?? '');
 
-    const curriculumId = getSessionCurriculumItemId(id);
+    const curriculumId = await getSessionCurriculumItemId(id);
     if (curriculumId) {
-      const items = getCurriculumItems();
+      const items = await getCurriculumItems();
       const item = items.find((i) => i.id === curriculumId);
       if (item) setCurriculumName(item.name);
     }
@@ -59,36 +59,36 @@ export default function SessionDetailScreen() {
     loadData();
   }, [loadData]);
 
-  const handleDeleteSegment = useCallback((segmentId: string) => {
-    deleteSegment(segmentId);
-    loadData();
+  const handleDeleteSegment = useCallback(async (segmentId: string) => {
+    await deleteSegment(segmentId);
+    await loadData();
   }, [loadData]);
 
-  const handleUpdateNotes = useCallback((text: string) => {
+  const handleUpdateNotes = useCallback(async (text: string) => {
     if (!id) return;
-    updateSessionNotes(id, text);
+    await updateSessionNotes(id, text);
     setNotes(text);
   }, [id]);
 
-  const handleUpdateVideoUrl = useCallback((url: string) => {
+  const handleUpdateVideoUrl = useCallback(async (url: string) => {
     if (!id) return;
-    updateSessionVideoUrl(id, url);
+    await updateSessionVideoUrl(id, url);
     setVideoUrl(url);
   }, [id]);
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!id || activeSession) return;
-    resumeSession(id);
+    await resumeSession(id);
     router.replace('/(tabs)');
   };
 
-  const handleTapSegment = useCallback((segmentId: string) => {
+  const handleTapSegment = useCallback(async (segmentId: string) => {
     if (!id) return;
     if (activeSession) {
       Alert.alert('Session Active', 'End your current session before resuming a segment.');
       return;
     }
-    resumeSegment(id, segmentId);
+    await resumeSegment(id, segmentId);
     router.replace('/(tabs)');
   }, [id, activeSession, resumeSegment, router]);
 
@@ -102,8 +102,8 @@ export default function SessionDetailScreen() {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => {
-            deleteSession(id);
+          onPress: async () => {
+            await deleteSession(id);
             router.back();
           },
         },

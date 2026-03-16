@@ -39,7 +39,7 @@ export function SoundPicker({
       await metronome.playPreview(sound.id);
       // Update service and persist
       await metronome.changeSound(sound.id);
-      setPreference('metronome_sound', sound.id);
+      await setPreference('metronome_sound', sound.id);
       onSoundChange(sound.id);
     },
     [onSoundChange],

@@ -7,7 +7,7 @@ import { getAllSessions } from '@/db/queries';
 import { SessionCard } from '@/components/history/SessionCard';
 import { colors, spacing, fontSize } from '@/constants/theme';
 
-type SessionRow = ReturnType<typeof getAllSessions>[number];
+type SessionRow = Awaited<ReturnType<typeof getAllSessions>>[number];
 
 export default function HistoryScreen() {
   const router = useRouter();
@@ -15,7 +15,9 @@ export default function HistoryScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      setSessions(getAllSessions());
+      (async () => {
+        setSessions(await getAllSessions());
+      })();
     }, []),
   );
 

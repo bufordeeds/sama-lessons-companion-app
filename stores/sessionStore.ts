@@ -26,13 +26,13 @@ interface SessionStore {
   lastLoggedAttemptId: string | null;
 
   // Session lifecycle
-  startSession: (curriculumItemId: string, tempo?: number) => void;
-  endSession: () => string | null;
-  startNewSegment: () => void;
-  endCurrentSegment: () => void;
+  startSession: (curriculumItemId: string, tempo?: number) => Promise<void>;
+  endSession: () => Promise<string | null>;
+  startNewSegment: () => Promise<void>;
+  endCurrentSegment: () => Promise<void>;
 
-  resumeSession: (sessionId: string) => void;
-  resumeSegment: (sessionId: string, segmentId: string) => void;
+  resumeSession: (sessionId: string) => Promise<void>;
+  resumeSegment: (sessionId: string, segmentId: string) => Promise<void>;
 
   // During practice
   selectOstinato: (ostinato: Ostinato) => void;
@@ -41,11 +41,11 @@ interface SessionStore {
   incrementMistakes: () => void;
   decrementMistakes: () => void;
   toggleOstinatoBroke: () => void;
-  logAttempt: () => void;
-  deleteAttempt: (attemptId: string) => void;
-  undoLastAttempt: () => void;
+  logAttempt: () => Promise<void>;
+  deleteAttempt: (attemptId: string) => Promise<void>;
+  undoLastAttempt: () => Promise<void>;
   resetAttemptInputs: () => void;
-  reloadAttempts: () => void;
+  reloadAttempts: () => Promise<void>;
 }
 
 function clampTempo(tempo: number): number {
@@ -59,14 +59,14 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   lastEndedSegmentId: null,
   lastLoggedAttemptId: null,
 
-  startSession: (curriculumItemId: string, tempo?: number) => {
+  startSession: async (curriculumItemId: string, tempo?: number) => {
     const now = new Date().toISOString();
     const sessionId = randomUUID();
     const segmentId = randomUUID();
 
     const ostinatos = getOstinatosForCurriculum(curriculumItemId);
-    queries.createSession(sessionId, now, curriculumItemId);
-    queries.createSegment(segmentId, sessionId, 1, now);
+    await queries.createSession(sessionId, now, curriculumItemId);
+    await queries.createSegment(segmentId, sessionId, 1, now);
 
     set({
       activeSession: {
@@ -87,23 +87,23 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     });
   },
 
-  resumeSession: (sessionId: string) => {
-    const session = queries.getSessionById(sessionId);
+  resumeSession: async (sessionId: string) => {
+    const session = await queries.getSessionById(sessionId);
     if (!session) return;
 
     // Reopen session
-    queries.reopenSession(sessionId);
+    await queries.reopenSession(sessionId);
 
     // Get curriculum item from existing attempts
-    const curriculumItemId = queries.getSessionCurriculumItemId(sessionId) ?? '';
+    const curriculumItemId = (await queries.getSessionCurriculumItemId(sessionId)) ?? '';
     const ostinatos = getOstinatosForCurriculum(curriculumItemId);
 
     // Get last segment to determine next segment number
-    const lastSegment = queries.getLastSegmentForSession(sessionId);
+    const lastSegment = await queries.getLastSegmentForSession(sessionId);
     const nextNumber = lastSegment ? lastSegment.segment_number + 1 : 1;
 
     // Get last attempt's tempo to restore it
-    const lastAttempts = queries.getSessionAttemptsGrouped(sessionId);
+    const lastAttempts = await queries.getSessionAttemptsGrouped(sessionId);
     const lastTempo = lastAttempts.length > 0
       ? lastAttempts[lastAttempts.length - 1].tempo
       : 100;
@@ -111,7 +111,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     // Create a new segment for the resumed session
     const now = new Date().toISOString();
     const segmentId = randomUUID();
-    queries.createSegment(segmentId, sessionId, nextNumber, now);
+    await queries.createSegment(segmentId, sessionId, nextNumber, now);
 
     set({
       activeSession: {
@@ -133,22 +133,22 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     });
   },
 
-  resumeSegment: (sessionId: string, segmentId: string) => {
-    const session = queries.getSessionById(sessionId);
+  resumeSegment: async (sessionId: string, segmentId: string) => {
+    const session = await queries.getSessionById(sessionId);
     if (!session) return;
 
-    const segment = queries.getSegmentById(segmentId);
+    const segment = await queries.getSegmentById(segmentId);
     if (!segment) return;
 
     // Reopen session and segment
-    queries.reopenSession(sessionId);
-    queries.reopenSegment(segmentId);
+    await queries.reopenSession(sessionId);
+    await queries.reopenSegment(segmentId);
 
-    const curriculumItemId = queries.getSessionCurriculumItemId(sessionId) ?? '';
+    const curriculumItemId = (await queries.getSessionCurriculumItemId(sessionId)) ?? '';
     const ostinatos = getOstinatosForCurriculum(curriculumItemId);
 
     // Load existing attempts for this segment
-    const existingAttempts = queries.getAttemptsBySegment(segmentId);
+    const existingAttempts = await queries.getAttemptsBySegment(segmentId);
 
     // Restore tempo and ostinato from the last attempt in this segment
     const lastAttempt = existingAttempts.length > 0
@@ -179,7 +179,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     });
   },
 
-  endSession: () => {
+  endSession: async () => {
     const { activeSession, betweenSegments } = get();
     if (!activeSession) return null;
 
@@ -187,9 +187,9 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
 
     // Close current segment if not already between segments
     if (!betweenSegments) {
-      queries.endSegment(activeSession.currentSegmentId, now);
+      await queries.endSegment(activeSession.currentSegmentId, now);
     }
-    queries.endSession(activeSession.sessionId, now);
+    await queries.endSession(activeSession.sessionId, now);
 
     const sessionId = activeSession.sessionId;
     set({
@@ -201,12 +201,12 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     return sessionId;
   },
 
-  endCurrentSegment: () => {
+  endCurrentSegment: async () => {
     const { activeSession } = get();
     if (!activeSession) return;
 
     const now = new Date().toISOString();
-    queries.endSegment(activeSession.currentSegmentId, now);
+    await queries.endSegment(activeSession.currentSegmentId, now);
 
     set({
       betweenSegments: true,
@@ -214,7 +214,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     });
   },
 
-  startNewSegment: () => {
+  startNewSegment: async () => {
     const { activeSession } = get();
     if (!activeSession) return;
 
@@ -222,7 +222,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     const segmentId = randomUUID();
     const nextNumber = activeSession.segmentNumber + 1;
 
-    queries.createSegment(segmentId, activeSession.sessionId, nextNumber, now);
+    await queries.createSegment(segmentId, activeSession.sessionId, nextNumber, now);
 
     const newSegOstinatos = getOstinatosForCurriculum(activeSession.curriculumItemId);
     set({
@@ -310,14 +310,14 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     });
   },
 
-  logAttempt: () => {
+  logAttempt: async () => {
     const { activeSession } = get();
     if (!activeSession) return;
 
     hapticMedium();
 
     const attemptId = randomUUID();
-    queries.createAttempt(
+    await queries.createAttempt(
       attemptId,
       activeSession.currentSegmentId,
       activeSession.curriculumItemId,
@@ -328,8 +328,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     );
 
     // Save preferences
-    queries.setPreference('lastCurriculumItemId', activeSession.curriculumItemId);
-    queries.setPreference('lastTempo', String(activeSession.tempo));
+    await queries.setPreference('lastCurriculumItemId', activeSession.curriculumItemId);
+    await queries.setPreference('lastTempo', String(activeSession.tempo));
 
     // Reset inputs but keep ostinato and tempo
     set({
@@ -342,24 +342,24 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     });
 
     // Reload attempts
-    get().reloadAttempts();
+    await get().reloadAttempts();
   },
 
-  deleteAttempt: (attemptId: string) => {
-    queries.deleteAttempt(attemptId);
+  deleteAttempt: async (attemptId: string) => {
+    await queries.deleteAttempt(attemptId);
     const { lastLoggedAttemptId } = get();
     if (lastLoggedAttemptId === attemptId) {
       set({ lastLoggedAttemptId: null });
     }
-    get().reloadAttempts();
+    await get().reloadAttempts();
   },
 
-  undoLastAttempt: () => {
+  undoLastAttempt: async () => {
     const { lastLoggedAttemptId } = get();
     if (!lastLoggedAttemptId) return;
-    queries.deleteAttempt(lastLoggedAttemptId);
+    await queries.deleteAttempt(lastLoggedAttemptId);
     set({ lastLoggedAttemptId: null });
-    get().reloadAttempts();
+    await get().reloadAttempts();
   },
 
   resetAttemptInputs: () => {
@@ -374,10 +374,10 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     });
   },
 
-  reloadAttempts: () => {
+  reloadAttempts: async () => {
     const { activeSession } = get();
     if (!activeSession) return;
-    const attempts = queries.getAttemptsBySegment(activeSession.currentSegmentId);
+    const attempts = await queries.getAttemptsBySegment(activeSession.currentSegmentId);
     set({ currentSegmentAttempts: attempts });
   },
 }));

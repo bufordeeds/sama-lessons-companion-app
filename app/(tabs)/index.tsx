@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   StyleSheet,
   Pressable,
@@ -63,39 +63,51 @@ export default function PracticeScreen() {
 
   // Load curriculum items and saved preferences
   useEffect(() => {
-    const items = getCurriculumItems();
-    setCurriculumItems(items);
+    (async () => {
+      const items = await getCurriculumItems();
+      setCurriculumItems(items);
 
-    const savedItemId = getPreference('lastCurriculumItemId');
-    const savedTempo = getPreference('lastTempo');
+      const savedItemId = await getPreference('lastCurriculumItemId');
+      const savedTempo = await getPreference('lastTempo');
 
-    if (savedItemId && items.some((i) => i.id === savedItemId)) {
-      setSelectedItemId(savedItemId);
-    } else if (items.length > 0) {
-      setSelectedItemId(items[0].id);
-    }
-
-    if (savedTempo) {
-      const parsed = parseInt(savedTempo, 10);
-      if (!isNaN(parsed) && parsed >= 40 && parsed <= 300) {
-        setInitialTempo(parsed);
+      if (savedItemId && items.some((i) => i.id === savedItemId)) {
+        setSelectedItemId(savedItemId);
+      } else if (items.length > 0) {
+        setSelectedItemId(items[0].id);
       }
-    }
+
+      if (savedTempo) {
+        const parsed = parseInt(savedTempo, 10);
+        if (!isNaN(parsed) && parsed >= 40 && parsed <= 300) {
+          setInitialTempo(parsed);
+        }
+      }
+    })();
   }, []);
 
-  const ostinatoStatuses = useMemo(() => {
-    if (!activeSession) return new Map<Ostinato, { passed: boolean; attemptCount: number }>();
-    return getOstinatoStatusesForSegment(activeSession.currentSegmentId);
+  const [ostinatoStatuses, setOstinatoStatuses] = useState(
+    new Map<Ostinato, { passed: boolean; attemptCount: number }>(),
+  );
+
+  useEffect(() => {
+    if (!activeSession) {
+      setOstinatoStatuses(new Map());
+      return;
+    }
+    (async () => {
+      const statuses = await getOstinatoStatusesForSegment(activeSession.currentSegmentId);
+      setOstinatoStatuses(statuses);
+    })();
   }, [activeSession?.currentSegmentId, currentSegmentAttempts]);
 
-  const handleStartSession = useCallback(() => {
+  const handleStartSession = useCallback(async () => {
     if (selectedItemId) {
-      startSession(selectedItemId, initialTempo);
+      await startSession(selectedItemId, initialTempo);
     }
   }, [selectedItemId, initialTempo, startSession]);
 
-  const handleEndSession = useCallback(() => {
-    const sessionId = endSession();
+  const handleEndSession = useCallback(async () => {
+    const sessionId = await endSession();
     if (sessionId) {
       router.push(`/session/${sessionId}` as any);
     }
@@ -109,11 +121,23 @@ export default function PracticeScreen() {
     useSessionStore.setState({ lastLoggedAttemptId: null });
   }, []);
 
+  const [segmentStats, setSegmentStats] = useState<{
+    attemptCount: number;
+    ostinatosPassed: number;
+    avgMistakes: number;
+  }>({ attemptCount: 0, ostinatosPassed: 0, avgMistakes: 0 });
+
+  useEffect(() => {
+    if (betweenSegments && lastEndedSegmentId) {
+      (async () => {
+        const stats = await getSegmentSummary(lastEndedSegmentId);
+        setSegmentStats(stats);
+      })();
+    }
+  }, [betweenSegments, lastEndedSegmentId]);
+
   // Between segments — break screen
   if (activeSession && betweenSegments) {
-    const segmentStats = lastEndedSegmentId
-      ? getSegmentSummary(lastEndedSegmentId)
-      : { attemptCount: 0, ostinatosPassed: 0, avgMistakes: 0 };
 
     return (
       <View style={styles.container}>

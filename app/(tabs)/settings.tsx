@@ -16,43 +16,60 @@ import { SyncService } from '@/services/SyncService';
 import { getPreference, setPreference } from '@/db/queries';
 import { getSoundById } from '@/constants/metronome';
 import { exportSessionsCsv } from '@/utils/exportCsv';
+import { refreshHapticsEnabled } from '@/utils/haptics';
 import { colors, spacing, fontSize, borderRadius, touchTarget } from '@/constants/theme';
 
 export default function SettingsScreen() {
   const { signOut, user } = useAuth();
 
   // Metronome sound
-  const [soundId, setSoundId] = useState(() => getPreference('metronome_sound') ?? 'Perc_MetronomeQuartz');
+  const [soundId, setSoundId] = useState('Perc_MetronomeQuartz');
   const [soundPickerVisible, setSoundPickerVisible] = useState(false);
   const currentSound = getSoundById(soundId);
 
   // Default tempo
-  const [defaultTempo, setDefaultTempo] = useState(() => {
-    const saved = getPreference('lastTempo');
-    return saved ? parseInt(saved, 10) || 100 : 100;
-  });
+  const [defaultTempo, setDefaultTempo] = useState(100);
 
   // Haptics
-  const [hapticsEnabled, setHapticsEnabled] = useState(() => {
-    return getPreference('hapticsEnabled') !== 'false';
-  });
+  const [hapticsEnabled, setHapticsEnabled] = useState(true);
 
   // Sync
-  const [lastSyncAt, setLastSyncAt] = useState(() => getPreference('last_sync_at'));
+  const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+
+  // Load preferences on mount
+  useEffect(() => {
+    (async () => {
+      const savedSound = await getPreference('metronome_sound');
+      if (savedSound) setSoundId(savedSound);
+
+      const savedTempo = await getPreference('lastTempo');
+      if (savedTempo) {
+        const parsed = parseInt(savedTempo, 10);
+        if (!isNaN(parsed)) setDefaultTempo(parsed);
+      }
+
+      const savedHaptics = await getPreference('hapticsEnabled');
+      if (savedHaptics !== null) setHapticsEnabled(savedHaptics !== 'false');
+
+      const savedSync = await getPreference('last_sync_at');
+      setLastSyncAt(savedSync);
+    })();
+  }, []);
 
   const handleTempoChange = useCallback((delta: number) => {
     setDefaultTempo((prev) => {
       const next = Math.max(40, Math.min(300, prev + delta));
-      setPreference('lastTempo', String(next));
+      (async () => { await setPreference('lastTempo', String(next)); })();
       return next;
     });
   }, []);
 
-  const handleHapticsToggle = useCallback((value: boolean) => {
+  const handleHapticsToggle = useCallback(async (value: boolean) => {
     setHapticsEnabled(value);
-    setPreference('hapticsEnabled', value ? 'true' : 'false');
+    await setPreference('hapticsEnabled', value ? 'true' : 'false');
+    await refreshHapticsEnabled();
   }, []);
 
   const handleSoundChange = useCallback((newSoundId: string) => {
@@ -63,7 +80,7 @@ export default function SettingsScreen() {
     setIsSyncing(true);
     try {
       await SyncService.fullSync();
-      setLastSyncAt(getPreference('last_sync_at'));
+      setLastSyncAt(await getPreference('last_sync_at'));
     } catch {
       Alert.alert('Sync Error', 'Failed to sync. Please try again.');
     } finally {
