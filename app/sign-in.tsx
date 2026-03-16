@@ -4,10 +4,10 @@ import { useAuth } from '@/providers/AuthProvider';
 import { colors } from '@/constants/theme';
 
 export default function SignInScreen() {
-  const { signIn, signInWithEmail, devBypass } = useAuth();
+  const { signIn, sendMagicLink, devBypass } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
 
   const handleAppleSignIn = async () => {
     if (isSigningIn) return;
@@ -24,11 +24,12 @@ export default function SignInScreen() {
     }
   };
 
-  const handleEmailSignIn = async () => {
-    if (isSigningIn || !email.trim() || !password.trim()) return;
+  const handleMagicLink = async () => {
+    if (isSigningIn || !email.trim()) return;
     setIsSigningIn(true);
     try {
-      await signInWithEmail(email.trim(), password);
+      await sendMagicLink(email.trim());
+      setMagicLinkSent(true);
     } catch (error: any) {
       Alert.alert('Sign In Failed', error.message ?? 'Please try again.');
     } finally {
@@ -53,6 +54,18 @@ export default function SignInScreen() {
       <View style={styles.buttonContainer}>
         {Platform.OS === 'ios' ? (
           <AppleSignInButton onPress={handleAppleSignIn} />
+        ) : magicLinkSent ? (
+          <View style={styles.emailForm}>
+            <Text style={styles.magicLinkSent}>
+              Check your email for a sign-in link.
+            </Text>
+            <Pressable
+              style={styles.emailButton}
+              onPress={() => { setMagicLinkSent(false); setEmail(''); }}
+            >
+              <Text style={styles.emailButtonText}>Try a different email</Text>
+            </Pressable>
+          </View>
         ) : (
           <View style={styles.emailForm}>
             <TextInput
@@ -65,26 +78,17 @@ export default function SignInScreen() {
               keyboardType="email-address"
               autoComplete="email"
             />
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              placeholderTextColor={colors.textMuted}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoComplete="password"
-            />
             <Pressable
               style={[styles.emailButton, isSigningIn && styles.emailButtonDisabled]}
-              onPress={handleEmailSignIn}
+              onPress={handleMagicLink}
               disabled={isSigningIn}
             >
               <Text style={styles.emailButtonText}>
-                {isSigningIn ? 'Signing in...' : 'Sign In'}
+                {isSigningIn ? 'Sending...' : 'Send Sign-In Link'}
               </Text>
             </Pressable>
             <Text style={styles.emailNote}>
-              A new account will be created if one doesn't exist.
+              We'll email you a link to sign in — no password needed.
             </Text>
           </View>
         )}
@@ -179,6 +183,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  magicLinkSent: {
+    fontSize: 16,
+    color: colors.text,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 8,
   },
   emailNote: {
     fontSize: 12,

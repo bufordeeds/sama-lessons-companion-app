@@ -10,7 +10,7 @@ interface AuthContextValue {
   isLoading: boolean;
   isAuthenticated: boolean;
   signIn: () => Promise<void>;
-  signInWithEmail: (email: string, password: string) => Promise<void>;
+  sendMagicLink: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
   devBypass: () => void;
 }
@@ -21,7 +21,7 @@ const AuthContext = createContext<AuthContextValue>({
   isLoading: true,
   isAuthenticated: false,
   signIn: async () => {},
-  signInWithEmail: async () => {},
+  sendMagicLink: async () => {},
   signOut: async () => {},
   devBypass: () => {},
 });
@@ -58,10 +58,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     SyncService.initialUpload();
   };
 
-  const signInWithEmail = async (email: string, password: string) => {
-    const result = await AuthService.signInWithEmail(email, password);
-    setSession(result.session);
-    SyncService.initialUpload();
+  const sendMagicLink = async (email: string) => {
+    await AuthService.sendMagicLink(email);
   };
 
   const signOut = async () => {
@@ -110,7 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         isAuthenticated: !!session || devMode,
         signIn,
-        signInWithEmail,
+        sendMagicLink,
         signOut,
         devBypass,
       }}

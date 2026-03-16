@@ -49,30 +49,17 @@ export const AuthService = {
   },
 
   /**
-   * Sign in with email + password via Supabase (web and non-iOS platforms).
-   * Creates the account on first attempt if it doesn't exist.
+   * Send a magic link to the user's email (web and non-iOS platforms).
+   * Works regardless of how the account was created (Apple OAuth, email, etc.).
    */
-  async signInWithEmail(email: string, password: string): Promise<{
-    session: Session;
-    user: User;
-  }> {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (error?.message?.includes('Invalid login')) {
-      // Account doesn't exist yet — sign up
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
-      if (signUpError) throw signUpError;
-      if (!signUpData.session || !signUpData.user) {
-        throw new Error('Sign-up succeeded but returned no session');
-      }
-      return { session: signUpData.session, user: signUpData.user };
-    }
-
+  async sendMagicLink(email: string): Promise<void> {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
+      },
+    });
     if (error) throw error;
-    if (!data.session || !data.user) {
-      throw new Error('Sign-in succeeded but returned no session');
-    }
-    return { session: data.session, user: data.user };
   },
 
   async signOut(): Promise<void> {
