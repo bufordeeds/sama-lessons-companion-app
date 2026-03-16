@@ -1,7 +1,18 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://sama.buford.dev/api';
 const TOKEN_KEY = 'sama_auth_token';
+
+function getBaseUrl(): string {
+  const env = process.env.EXPO_PUBLIC_API_URL;
+  if (env) return env;
+  if (__DEV__) {
+    return Platform.OS === 'web' ? 'http://localhost:3000/api' : 'http://10.0.2.2:3000/api';
+  }
+  return 'https://sama.buford.dev/api';
+}
+
+const BASE_URL = getBaseUrl();
 
 export async function getToken(): Promise<string | null> {
   return AsyncStorage.getItem(TOKEN_KEY);
@@ -15,15 +26,20 @@ export async function clearToken(): Promise<void> {
   await AsyncStorage.removeItem(TOKEN_KEY);
 }
 
-/**
- * Decode a JWT payload without verification (client-side only).
- * Used to read expiry and user info from the stored token.
- */
-export function decodeToken(token: string): { sub: string; email: string; role: string; exp: number } | null {
+interface JwtPayload {
+  sub: string;
+  email: string;
+  role: string;
+  exp: number;
+  iat: number;
+}
+
+export function decodeToken(token: string): JwtPayload | null {
   try {
-    const payload = token.split('.')[1];
-    const json = atob(payload);
-    return JSON.parse(json);
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1]));
+    return payload as JwtPayload;
   } catch {
     return null;
   }
@@ -35,9 +51,6 @@ export function isTokenExpired(token: string): boolean {
   return Date.now() >= payload.exp * 1000;
 }
 
-/**
- * Authenticated fetch wrapper. Attaches JWT and handles 401.
- */
 export async function apiFetch<T = any>(
   path: string,
   options: RequestInit = {},
@@ -47,30 +60,18 @@ export async function apiFetch<T = any>(
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
   };
-
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_URL}${path}`, {
+  const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers,
   });
 
-  if (res.status === 401) {
-    await clearToken();
-    throw new Error('Session expired. Please sign in again.');
-  }
-
   if (!res.ok) {
-    const body = await res.text();
-    let message: string;
-    try {
-      message = JSON.parse(body).error ?? body;
-    } catch {
-      message = body;
-    }
-    throw new Error(message);
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? `API error ${res.status}`);
   }
 
   return res.json();
