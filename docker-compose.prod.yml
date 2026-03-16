@@ -1,0 +1,14 @@
+services:
+  sama-web:
+    build:
+      context: .
+      args:
+        EXPO_PUBLIC_SUPABASE_URL: ${EXPO_PUBLIC_SUPABASE_URL}
+        EXPO_PUBLIC_SUPABASE_ANON_KEY: ${EXPO_PUBLIC_SUPABASE_ANON_KEY}
+    restart: unless-stopped
+    networks:
+      - web
+
+networks:
+  web:
+    external: true

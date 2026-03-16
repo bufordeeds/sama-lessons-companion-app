@@ -1,25 +1,37 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, Alert, Platform, Pressable } from 'react-native';
-import * as AppleAuthentication from 'expo-apple-authentication';
+import { View, Text, StyleSheet, Image, Alert, Platform, Pressable, TextInput } from 'react-native';
 import { useAuth } from '@/providers/AuthProvider';
 import { colors } from '@/constants/theme';
 
 export default function SignInScreen() {
-  const { signIn, devBypass } = useAuth();
+  const { signIn, signInWithEmail, devBypass } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const handleSignIn = async () => {
+  const handleAppleSignIn = async () => {
     if (isSigningIn) return;
     setIsSigningIn(true);
     try {
       await signIn();
     } catch (error: any) {
-      // User cancelled — not an error
       if (error.code === 'ERR_REQUEST_CANCELED') {
         setIsSigningIn(false);
         return;
       }
       Alert.alert('Sign In Failed', error.message ?? 'Please try again.');
+      setIsSigningIn(false);
+    }
+  };
+
+  const handleEmailSignIn = async () => {
+    if (isSigningIn || !email.trim() || !password.trim()) return;
+    setIsSigningIn(true);
+    try {
+      await signInWithEmail(email.trim(), password);
+    } catch (error: any) {
+      Alert.alert('Sign In Failed', error.message ?? 'Please try again.');
+    } finally {
       setIsSigningIn(false);
     }
   };
@@ -40,17 +52,41 @@ export default function SignInScreen() {
 
       <View style={styles.buttonContainer}>
         {Platform.OS === 'ios' ? (
-          <AppleAuthentication.AppleAuthenticationButton
-            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
-            cornerRadius={12}
-            style={styles.appleButton}
-            onPress={handleSignIn}
-          />
+          <AppleSignInButton onPress={handleAppleSignIn} />
         ) : (
-          <Text style={styles.platformNote}>
-            Sign in with Apple is only available on iOS devices.
-          </Text>
+          <View style={styles.emailForm}>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor={colors.textMuted}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoComplete="email"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              placeholderTextColor={colors.textMuted}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoComplete="password"
+            />
+            <Pressable
+              style={[styles.emailButton, isSigningIn && styles.emailButtonDisabled]}
+              onPress={handleEmailSignIn}
+              disabled={isSigningIn}
+            >
+              <Text style={styles.emailButtonText}>
+                {isSigningIn ? 'Signing in...' : 'Sign In'}
+              </Text>
+            </Pressable>
+            <Text style={styles.emailNote}>
+              A new account will be created if one doesn't exist.
+            </Text>
+          </View>
         )}
         {__DEV__ && (
           <Pressable style={styles.devBypass} onPress={() => devBypass()}>
@@ -59,6 +95,20 @@ export default function SignInScreen() {
         )}
       </View>
     </View>
+  );
+}
+
+/** Lazy-loaded Apple Sign-In button (avoids importing expo-apple-authentication on web) */
+function AppleSignInButton({ onPress }: { onPress: () => void }) {
+  const AppleAuthentication = require('expo-apple-authentication');
+  return (
+    <AppleAuthentication.AppleAuthenticationButton
+      buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+      buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+      cornerRadius={12}
+      style={styles.appleButton}
+      onPress={onPress}
+    />
   );
 }
 
@@ -100,10 +150,41 @@ const styles = StyleSheet.create({
     width: 280,
     height: 52,
   },
-  platformNote: {
-    fontSize: 14,
+  emailForm: {
+    width: '100%',
+    maxWidth: 320,
+    gap: 12,
+  },
+  input: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: colors.text,
+  },
+  emailButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  emailButtonDisabled: {
+    opacity: 0.6,
+  },
+  emailButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  emailNote: {
+    fontSize: 12,
     color: colors.textMuted,
     textAlign: 'center',
+    marginTop: 4,
   },
   devBypass: {
     marginTop: 20,

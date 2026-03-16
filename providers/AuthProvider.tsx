@@ -10,6 +10,7 @@ interface AuthContextValue {
   isLoading: boolean;
   isAuthenticated: boolean;
   signIn: () => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   devBypass: () => void;
 }
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextValue>({
   isLoading: true,
   isAuthenticated: false,
   signIn: async () => {},
+  signInWithEmail: async () => {},
   signOut: async () => {},
   devBypass: () => {},
 });
@@ -53,7 +55,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async () => {
     const result = await AuthService.signInWithApple();
     setSession(result.session);
-    // Upload existing local data on first sign-in
+    SyncService.initialUpload();
+  };
+
+  const signInWithEmail = async (email: string, password: string) => {
+    const result = await AuthService.signInWithEmail(email, password);
+    setSession(result.session);
     SyncService.initialUpload();
   };
 
@@ -103,6 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         isAuthenticated: !!session || devMode,
         signIn,
+        signInWithEmail,
         signOut,
         devBypass,
       }}
