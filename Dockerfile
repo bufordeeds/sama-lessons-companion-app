@@ -1,8 +1,7 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 
-ARG EXPO_PUBLIC_SUPABASE_URL
-ARG EXPO_PUBLIC_SUPABASE_ANON_KEY
+ARG EXPO_PUBLIC_API_URL
 
 COPY package.json package-lock.json ./
 RUN npm ci

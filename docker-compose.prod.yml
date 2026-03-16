@@ -3,12 +3,24 @@ services:
     build:
       context: .
       args:
-        EXPO_PUBLIC_SUPABASE_URL: ${EXPO_PUBLIC_SUPABASE_URL}
-        EXPO_PUBLIC_SUPABASE_ANON_KEY: ${EXPO_PUBLIC_SUPABASE_ANON_KEY}
+        EXPO_PUBLIC_API_URL: ${EXPO_PUBLIC_API_URL}
     restart: unless-stopped
     networks:
       - web
 
+  sama-api:
+    build:
+      context: ./api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://buford:${POSTGRES_PASSWORD}@postgres:5432/sama
+      JWT_SECRET: ${SAMA_JWT_SECRET}
+    networks:
+      - web
+      - internal
+
 networks:
   web:
+    external: true
+  internal:
     external: true

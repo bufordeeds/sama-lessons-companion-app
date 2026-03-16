@@ -1,81 +1,48 @@
-import { Platform } from 'react-native';
-import { supabase } from '@/lib/supabase';
-import type { Session, User } from '@supabase/supabase-js';
+import { apiFetch, getToken, setToken, clearToken, decodeToken, isTokenExpired } from '@/lib/api';
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
+}
 
 export const AuthService = {
-  /**
-   * Sign in with Apple (iOS only), then exchange the identity token with Supabase.
-   * Apple only provides the user's full name on the FIRST sign-in,
-   * so we capture and return it here for the caller to persist if needed.
-   */
-  async signInWithApple(): Promise<{
-    session: Session;
-    user: User;
-    fullName?: string;
-  }> {
-    const AppleAuthentication = await import('expo-apple-authentication');
-
-    const credential = await AppleAuthentication.signInAsync({
-      requestedScopes: [
-        AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-        AppleAuthentication.AppleAuthenticationScope.EMAIL,
-      ],
+  async register(email: string, password: string, name: string): Promise<{ token: string; user: AuthUser }> {
+    const data = await apiFetch<{ token: string; user: AuthUser }>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, name }),
     });
-
-    if (!credential.identityToken) {
-      throw new Error('No identity token returned from Apple');
-    }
-
-    const { data, error } = await supabase.auth.signInWithIdToken({
-      provider: 'apple',
-      token: credential.identityToken,
-    });
-
-    if (error) throw error;
-    if (!data.session || !data.user) {
-      throw new Error('Supabase sign-in succeeded but returned no session');
-    }
-
-    let fullName: string | undefined;
-    if (credential.fullName) {
-      const parts = [
-        credential.fullName.givenName,
-        credential.fullName.familyName,
-      ].filter(Boolean);
-      if (parts.length > 0) fullName = parts.join(' ');
-    }
-
-    return { session: data.session, user: data.user, fullName };
+    await setToken(data.token);
+    return data;
   },
 
-  /**
-   * Send a magic link to the user's email (web and non-iOS platforms).
-   * Works regardless of how the account was created (Apple OAuth, email, etc.).
-   */
-  async sendMagicLink(email: string): Promise<void> {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
-      },
+  async login(email: string, password: string): Promise<{ token: string; user: AuthUser }> {
+    const data = await apiFetch<{ token: string; user: AuthUser }>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
     });
-    if (error) throw error;
+    await setToken(data.token);
+    return data;
+  },
+
+  async getStoredUser(): Promise<AuthUser | null> {
+    const token = await getToken();
+    if (!token || isTokenExpired(token)) {
+      if (token) await clearToken();
+      return null;
+    }
+    const payload = decodeToken(token);
+    if (!payload) return null;
+    return {
+      id: payload.sub,
+      email: payload.email,
+      name: null,
+      role: payload.role,
+    };
   },
 
   async signOut(): Promise<void> {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-  },
-
-  async getSession(): Promise<Session | null> {
-    const { data } = await supabase.auth.getSession();
-    return data.session;
-  },
-
-  onAuthStateChange(callback: (session: Session | null) => void) {
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      callback(session);
-    });
-    return data.subscription;
+    await clearToken();
   },
 };

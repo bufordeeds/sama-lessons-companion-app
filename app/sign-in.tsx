@@ -1,38 +1,34 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, Alert, Platform, Pressable, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Image, Alert, Pressable, TextInput } from 'react-native';
 import { useAuth } from '@/providers/AuthProvider';
 import { colors } from '@/constants/theme';
 
 export default function SignInScreen() {
-  const { signIn, sendMagicLink, devBypass } = useAuth();
+  const { login, register } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState('');
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
 
-  const handleAppleSignIn = async () => {
-    if (isSigningIn) return;
+  const handleLogin = async () => {
+    if (isSigningIn || !email.trim() || !password) return;
     setIsSigningIn(true);
     try {
-      await signIn();
+      await login(email.trim(), password);
     } catch (error: any) {
-      if (error.code === 'ERR_REQUEST_CANCELED') {
-        setIsSigningIn(false);
-        return;
-      }
       Alert.alert('Sign In Failed', error.message ?? 'Please try again.');
       setIsSigningIn(false);
     }
   };
 
-  const handleMagicLink = async () => {
-    if (isSigningIn || !email.trim()) return;
+  const handleRegister = async () => {
+    if (isSigningIn || !email.trim() || !password || !name.trim()) return;
     setIsSigningIn(true);
     try {
-      await sendMagicLink(email.trim());
-      setMagicLinkSent(true);
+      await register(email.trim(), password, name.trim());
     } catch (error: any) {
-      Alert.alert('Sign In Failed', error.message ?? 'Please try again.');
-    } finally {
+      Alert.alert('Registration Failed', error.message ?? 'Please try again.');
       setIsSigningIn(false);
     }
   };
@@ -47,72 +43,68 @@ export default function SignInScreen() {
         />
         <Text style={styles.title}>SAMA Drum Practice</Text>
         <Text style={styles.subtitle}>
-          Sign in to sync your practice data across devices
+          {isRegistering
+            ? 'Create an account to get started'
+            : 'Sign in to sync your practice data across devices'}
         </Text>
       </View>
 
       <View style={styles.buttonContainer}>
-        {Platform.OS === 'ios' ? (
-          <AppleSignInButton onPress={handleAppleSignIn} />
-        ) : magicLinkSent ? (
-          <View style={styles.emailForm}>
-            <Text style={styles.magicLinkSent}>
-              Check your email for a sign-in link.
-            </Text>
-            <Pressable
-              style={styles.emailButton}
-              onPress={() => { setMagicLinkSent(false); setEmail(''); }}
-            >
-              <Text style={styles.emailButtonText}>Try a different email</Text>
-            </Pressable>
-          </View>
-        ) : (
-          <View style={styles.emailForm}>
+        <View style={styles.form}>
+          {isRegistering && (
             <TextInput
               style={styles.input}
-              placeholder="Email"
+              placeholder="Name"
               placeholderTextColor={colors.textMuted}
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              autoComplete="email"
+              value={name}
+              onChangeText={setName}
+              autoCapitalize="words"
+              autoComplete="name"
             />
-            <Pressable
-              style={[styles.emailButton, isSigningIn && styles.emailButtonDisabled]}
-              onPress={handleMagicLink}
-              disabled={isSigningIn}
-            >
-              <Text style={styles.emailButtonText}>
-                {isSigningIn ? 'Sending...' : 'Send Sign-In Link'}
-              </Text>
-            </Pressable>
-            <Text style={styles.emailNote}>
-              We'll email you a link to sign in — no password needed.
+          )}
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor={colors.textMuted}
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor={colors.textMuted}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoComplete={isRegistering ? 'new-password' : 'current-password'}
+          />
+          <Pressable
+            style={[styles.primaryButton, isSigningIn && styles.buttonDisabled]}
+            onPress={isRegistering ? handleRegister : handleLogin}
+            disabled={isSigningIn}
+          >
+            <Text style={styles.primaryButtonText}>
+              {isSigningIn
+                ? (isRegistering ? 'Creating Account...' : 'Signing In...')
+                : (isRegistering ? 'Create Account' : 'Sign In')}
             </Text>
-          </View>
-        )}
-        {__DEV__ && (
-          <Pressable style={styles.devBypass} onPress={() => devBypass()}>
-            <Text style={styles.devBypassText}>Skip (Dev Only)</Text>
           </Pressable>
-        )}
+          <Pressable
+            style={styles.toggleButton}
+            onPress={() => setIsRegistering(!isRegistering)}
+          >
+            <Text style={styles.toggleText}>
+              {isRegistering
+                ? 'Already have an account? Sign In'
+                : "Don't have an account? Create One"}
+            </Text>
+          </Pressable>
+        </View>
       </View>
     </View>
-  );
-}
-
-/** Lazy-loaded Apple Sign-In button (avoids importing expo-apple-authentication on web) */
-function AppleSignInButton({ onPress }: { onPress: () => void }) {
-  const AppleAuthentication = require('expo-apple-authentication');
-  return (
-    <AppleAuthentication.AppleAuthenticationButton
-      buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-      buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
-      cornerRadius={12}
-      style={styles.appleButton}
-      onPress={onPress}
-    />
   );
 }
 
@@ -150,11 +142,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     alignItems: 'center',
   },
-  appleButton: {
-    width: 280,
-    height: 52,
-  },
-  emailForm: {
+  form: {
     width: '100%',
     maxWidth: 320,
     gap: 12,
@@ -169,44 +157,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.text,
   },
-  emailButton: {
+  primaryButton: {
     backgroundColor: colors.primary,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 4,
   },
-  emailButtonDisabled: {
+  buttonDisabled: {
     opacity: 0.6,
   },
-  emailButtonText: {
+  primaryButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
-  magicLinkSent: {
-    fontSize: 16,
-    color: colors.text,
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 8,
+  toggleButton: {
+    alignItems: 'center',
+    paddingVertical: 8,
   },
-  emailNote: {
-    fontSize: 12,
-    color: colors.textMuted,
-    textAlign: 'center',
-    marginTop: 4,
-  },
-  devBypass: {
-    marginTop: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  devBypassText: {
+  toggleText: {
     fontSize: 14,
-    color: colors.textMuted,
+    color: colors.primary,
   },
 });

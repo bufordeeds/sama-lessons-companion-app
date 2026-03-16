@@ -15,4 +15,4 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-            'cd ~/projects/sama-web && git pull && cd ~ && docker compose build --no-cache sama-web && docker compose up -d sama-web'
+            'cd ~/projects/sama-web && git pull && cd ~ && docker compose build --no-cache sama-web sama-api && docker compose up -d sama-web sama-api'
