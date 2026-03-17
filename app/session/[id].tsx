@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { StyleSheet, Pressable, Alert, View as RNView } from 'react-native';
+import { Alert, Platform, StyleSheet, Pressable, View as RNView } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { Text, View } from '@/components/Themed';
 import dayjs from 'dayjs';
@@ -12,12 +12,15 @@ import {
   updateSessionNotes,
   getSessionVideoUrl,
   updateSessionVideoUrl,
+  updateSessionTimes,
+  updateSegmentTimes,
   deleteSession,
   deleteSegment,
 } from '@/db/queries';
 import { useSessionStore } from '@/stores/sessionStore';
 import { SessionDetail } from '@/components/history/SessionDetail';
 import type { AttemptRow, SessionSegmentRow } from '@/types';
+import { confirmDestructive } from '@/lib/confirm';
 import { colors, spacing, fontSize, borderRadius, touchTarget } from '@/constants/theme';
 
 export default function SessionDetailScreen() {
@@ -85,29 +88,37 @@ export default function SessionDetailScreen() {
   const handleTapSegment = useCallback(async (segmentId: string) => {
     if (!id) return;
     if (activeSession) {
-      Alert.alert('Session Active', 'End your current session before resuming a segment.');
+      if (Platform.OS === 'web') {
+        window.alert('End your current session before resuming a segment.');
+      } else {
+        Alert.alert('Session Active', 'End your current session before resuming a segment.');
+      }
       return;
     }
     await resumeSegment(id, segmentId);
     router.replace('/(tabs)');
   }, [id, activeSession, resumeSegment, router]);
 
+  const handleUpdateSessionTimes = useCallback(async (start: string, end: string | null) => {
+    if (!id) return;
+    await updateSessionTimes(id, start, end);
+    await loadData();
+  }, [id, loadData]);
+
+  const handleUpdateSegmentTimes = useCallback(async (segmentId: string, start: string, end: string | null) => {
+    await updateSegmentTimes(segmentId, start, end);
+    await loadData();
+  }, [loadData]);
+
   const handleDelete = () => {
     if (!id) return;
-    Alert.alert(
+    confirmDestructive(
       'Delete Session',
       'This will permanently delete this session and all its attempts. This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            await deleteSession(id);
-            router.back();
-          },
-        },
-      ],
+      async () => {
+        await deleteSession(id);
+        router.back();
+      },
     );
   };
 
@@ -126,6 +137,7 @@ export default function SessionDetailScreen() {
     <>
       <Stack.Screen options={{ title }} />
       <SessionDetail
+        sessionId={id!}
         startedAt={startedAt}
         curriculumItemName={curriculumName}
         segments={segments}
@@ -136,6 +148,8 @@ export default function SessionDetailScreen() {
         onUpdateNotes={handleUpdateNotes}
         onUpdateVideoUrl={handleUpdateVideoUrl}
         onTapSegment={handleTapSegment}
+        onUpdateSessionTimes={handleUpdateSessionTimes}
+        onUpdateSegmentTimes={handleUpdateSegmentTimes}
       />
       <RNView style={styles.actionBar}>
         <RNView style={{ flex: 1 }}>

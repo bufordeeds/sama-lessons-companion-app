@@ -234,6 +234,14 @@ export async function reopenSession(id: string): Promise<void> {
   await getDb().runAsync('UPDATE practice_sessions SET ended_at = NULL, synced = 0 WHERE id = ?', id);
 }
 
+export async function updateSessionTimes(id: string, startedAt: string, endedAt: string | null): Promise<void> {
+  await getDb().runAsync('UPDATE practice_sessions SET started_at = ?, ended_at = ?, synced = 0 WHERE id = ?', startedAt, endedAt, id);
+}
+
+export async function updateSegmentTimes(id: string, startedAt: string, endedAt: string | null): Promise<void> {
+  await getDb().runAsync('UPDATE session_segments SET started_at = ?, ended_at = ?, synced = 0 WHERE id = ?', startedAt, endedAt, id);
+}
+
 export async function deleteSession(id: string): Promise<void> {
   const db = getDb();
   await db.runAsync(

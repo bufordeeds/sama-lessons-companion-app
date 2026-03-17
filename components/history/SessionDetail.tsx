@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react';
-import { StyleSheet, ScrollView, View as RNView, Pressable, Alert, TextInput } from 'react-native';
+import { StyleSheet, ScrollView, View as RNView, Pressable, TextInput } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from '@/components/Themed';
@@ -9,9 +9,14 @@ import { ALL_OSTINATOS, type Ostinato } from '@/constants/curriculum';
 import type { AttemptRow, SessionSegmentRow } from '@/types';
 import { Badge } from '@/components/shared/Badge';
 import { VideoLinkCard, AddVideoButton } from '@/components/history/VideoLinkCard';
+import { confirmDestructive } from '@/lib/confirm';
 import { colors, spacing, fontSize, borderRadius } from '@/constants/theme';
 
+const TIME_FORMAT = 'YYYY-MM-DDTHH:mm';
+const DISPLAY_TIME_FORMAT = 'h:mm A';
+
 interface SessionDetailProps {
+  sessionId: string;
   startedAt: string;
   curriculumItemName: string;
   segments: SessionSegmentRow[];
@@ -22,6 +27,79 @@ interface SessionDetailProps {
   onUpdateNotes?: (notes: string) => void;
   onUpdateVideoUrl?: (url: string) => void;
   onTapSegment?: (segmentId: string) => void;
+  onUpdateSessionTimes?: (startedAt: string, endedAt: string | null) => void;
+  onUpdateSegmentTimes?: (segmentId: string, startedAt: string, endedAt: string | null) => void;
+}
+
+function EditableTime({
+  label,
+  startedAt,
+  endedAt,
+  onSave,
+}: {
+  label: string;
+  startedAt: string;
+  endedAt: string | null;
+  onSave: (start: string, end: string | null) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draftStart, setDraftStart] = useState('');
+  const [draftEnd, setDraftEnd] = useState('');
+
+  const startEdit = () => {
+    setDraftStart(dayjs(startedAt).format(TIME_FORMAT));
+    setDraftEnd(endedAt ? dayjs(endedAt).format(TIME_FORMAT) : '');
+    setEditing(true);
+  };
+
+  const handleSave = () => {
+    const newStart = dayjs(draftStart).toISOString();
+    const newEnd = draftEnd ? dayjs(draftEnd).toISOString() : null;
+    onSave(newStart, newEnd);
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <RNView style={styles.timeEditBlock}>
+        <Text style={styles.timeEditLabel}>{label} Start</Text>
+        <TextInput
+          style={styles.timeInput}
+          value={draftStart}
+          onChangeText={setDraftStart}
+          placeholder="YYYY-MM-DDTHH:mm"
+          placeholderTextColor={colors.textMuted}
+        />
+        <Text style={styles.timeEditLabel}>{label} End</Text>
+        <TextInput
+          style={styles.timeInput}
+          value={draftEnd}
+          onChangeText={setDraftEnd}
+          placeholder="YYYY-MM-DDTHH:mm (blank if ongoing)"
+          placeholderTextColor={colors.textMuted}
+        />
+        <RNView style={styles.notesActions}>
+          <Pressable style={styles.notesCancelButton} onPress={() => setEditing(false)}>
+            <Text style={styles.notesCancelText}>Cancel</Text>
+          </Pressable>
+          <Pressable style={styles.notesSaveButton} onPress={handleSave}>
+            <Text style={styles.notesSaveText}>Save</Text>
+          </Pressable>
+        </RNView>
+      </RNView>
+    );
+  }
+
+  const startDisplay = dayjs(startedAt).format(DISPLAY_TIME_FORMAT);
+  const endDisplay = endedAt ? dayjs(endedAt).format(DISPLAY_TIME_FORMAT) : 'ongoing';
+
+  return (
+    <Pressable onPress={startEdit} style={styles.timeDisplay}>
+      <Ionicons name="time-outline" size={14} color={colors.textMuted} />
+      <Text style={styles.timeText}>{startDisplay} — {endDisplay}</Text>
+      <FontAwesome name="pencil" size={10} color={colors.textMuted} />
+    </Pressable>
+  );
 }
 
 function formatSegmentDuration(segment: SessionSegmentRow): string {
@@ -40,11 +118,13 @@ function SwipeableSegment({
   segAttempts,
   onDelete,
   onTap,
+  onUpdateTimes,
 }: {
   segment: SessionSegmentRow;
   segAttempts: AttemptRow[];
   onDelete?: (segmentId: string) => void;
   onTap?: (segmentId: string) => void;
+  onUpdateTimes?: (segmentId: string, start: string, end: string | null) => void;
 }) {
   const swipeableRef = useRef<Swipeable>(null);
 
@@ -58,17 +138,11 @@ function SwipeableSegment({
   const duration = formatSegmentDuration(segment);
 
   const handleDelete = () => {
-    Alert.alert(
+    confirmDestructive(
       'Delete Segment',
       `Delete Segment ${segment.segment_number} and all its attempts?`,
-      [
-        { text: 'Cancel', style: 'cancel', onPress: () => swipeableRef.current?.close() },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => onDelete?.(segment.id),
-        },
-      ],
+      () => onDelete?.(segment.id),
+      () => swipeableRef.current?.close(),
     );
   };
 
@@ -99,6 +173,15 @@ function SwipeableSegment({
             <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
           )}
         </RNView>
+
+        {onUpdateTimes && (
+          <EditableTime
+            label={`Seg ${segment.segment_number}`}
+            startedAt={segment.started_at}
+            endedAt={segment.ended_at}
+            onSave={(start, end) => onUpdateTimes(segment.id, start, end)}
+          />
+        )}
 
         {segAttempts.length === 0 ? (
           <Text style={styles.emptySegment}>No attempts</Text>
@@ -160,6 +243,7 @@ function SwipeableSegment({
 }
 
 export function SessionDetail({
+  sessionId,
   startedAt,
   curriculumItemName,
   segments,
@@ -170,8 +254,12 @@ export function SessionDetail({
   onUpdateNotes,
   onUpdateVideoUrl,
   onTapSegment,
+  onUpdateSessionTimes,
+  onUpdateSegmentTimes,
 }: SessionDetailProps) {
   const date = dayjs(startedAt).format('MMM D, YYYY');
+  const lastSegment = segments[segments.length - 1];
+  const sessionEndedAt = lastSegment?.ended_at ?? null;
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [draftNotes, setDraftNotes] = useState(notes);
 
@@ -202,6 +290,14 @@ export function SessionDetail({
         <RNView style={styles.header}>
           <Text style={styles.date}>{date}</Text>
           <Text style={styles.curriculum}>{curriculumItemName}</Text>
+          {onUpdateSessionTimes && (
+            <EditableTime
+              label="Session"
+              startedAt={startedAt}
+              endedAt={sessionEndedAt}
+              onSave={onUpdateSessionTimes}
+            />
+          )}
         </RNView>
 
         {/* Notes section */}
@@ -272,6 +368,7 @@ export function SessionDetail({
             segAttempts={attemptsBySegment.get(segment.id) ?? []}
             onDelete={onDeleteSegment}
             onTap={onTapSegment}
+            onUpdateTimes={onUpdateSegmentTimes}
           />
         ))}
       </ScrollView>
@@ -462,5 +559,35 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     fontWeight: '700',
     color: colors.background,
+  },
+  timeDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingVertical: 2,
+  },
+  timeText: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+  },
+  timeEditBlock: {
+    gap: spacing.xs,
+    paddingVertical: spacing.xs,
+  },
+  timeEditLabel: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  timeInput: {
+    backgroundColor: colors.background,
+    borderRadius: borderRadius.md,
+    padding: spacing.sm,
+    fontSize: fontSize.sm,
+    color: colors.text,
+    borderWidth: 1,
+    borderColor: colors.border,
+    fontVariant: ['tabular-nums'],
   },
 });
