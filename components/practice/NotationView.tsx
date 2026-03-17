@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, ActivityIndicator, View as RNView } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Platform, StyleSheet, ActivityIndicator, View as RNView } from 'react-native';
 import { Text } from '@/components/Themed';
-import { WebView } from 'react-native-webview';
 import { Asset } from 'expo-asset';
-import { File } from 'expo-file-system';
 import { colors, spacing, fontSize } from '@/constants/theme';
 
 interface NotationViewProps {
@@ -14,9 +12,20 @@ interface NotationViewProps {
 // Cache the OSMD JS content so we only read it once per app session
 let cachedOsmdJs: string | null = null;
 
-/** Strip file:// prefix from URI to get a filesystem path */
-function uriToPath(uri: string): string {
-  return uri.replace(/^file:\/\//, '');
+async function readAssetText(asset: Asset): Promise<string> {
+  await asset.downloadAsync();
+  const uri = asset.localUri ?? asset.uri;
+  if (!uri) throw new Error('Failed to resolve asset URI');
+
+  if (Platform.OS === 'web') {
+    const res = await fetch(uri);
+    return res.text();
+  }
+
+  // Native: use expo-file-system File API
+  const { File } = await import('expo-file-system');
+  const file = new File(uri.replace(/^file:\/\//, ''));
+  return file.text();
 }
 
 async function getOsmdJs(): Promise<string> {
@@ -25,25 +34,53 @@ async function getOsmdJs(): Promise<string> {
   const asset = Asset.fromModule(
     require('../../assets/notation/opensheetmusicdisplay.min.bundle'),
   );
-  await asset.downloadAsync();
-  if (!asset.localUri) throw new Error('Failed to download OSMD asset');
-  const file = new File(uriToPath(asset.localUri));
-  cachedOsmdJs = await file.text();
+  cachedOsmdJs = await readAssetText(asset);
   return cachedOsmdJs;
 }
 
 async function getMusicXml(mxlAsset: number): Promise<string> {
   const asset = Asset.fromModule(mxlAsset);
-  await asset.downloadAsync();
-  if (!asset.localUri) throw new Error('Failed to download MusicXML asset');
-  const file = new File(uriToPath(asset.localUri));
-  return await file.text();
+  return readAssetText(asset);
 }
 
-function buildHtml(osmdJs: string): string {
+function buildHtml(osmdJs: string, xmlData?: string): string {
   // IMPORTANT: Use string concatenation, NOT template literals, because
   // the OSMD JS source contains backtick template literals that would
   // break an outer template literal.
+  //
+  // On web we embed the XML directly and auto-load, since there's no
+  // postMessage bridge like react-native-webview provides.
+  var autoLoadScript = '';
+  if (xmlData) {
+    // Escape the XML for embedding in a JS string literal
+    var escaped = xmlData
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'")
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '\\r');
+    autoLoadScript =
+      'window.addEventListener("load", function() {\n' +
+      '  if (osmd) {\n' +
+      "    osmd.load('" + escaped + "').then(function() {\n" +
+      '      osmd.render();\n' +
+      '      var contentH = document.getElementById("notation").scrollHeight;\n' +
+      '      var viewportH = window.innerHeight;\n' +
+      '      if (contentH > 0 && contentH < viewportH * 0.9) {\n' +
+      '        var zoom = Math.sqrt(viewportH / contentH);\n' +
+      '        if (zoom > 2.5) zoom = 2.5;\n' +
+      '        osmd.zoom = zoom;\n' +
+      '        osmd.render();\n' +
+      '      }\n' +
+      '      document.getElementById("loading").style.display = "none";\n' +
+      '    }).catch(function(e) {\n' +
+      '      document.getElementById("error").style.display = "block";\n' +
+      '      document.getElementById("error").textContent = "Failed to load: " + e.message;\n' +
+      '      document.getElementById("loading").style.display = "none";\n' +
+      '    });\n' +
+      '  }\n' +
+      '});\n';
+  }
+
   return '<!DOCTYPE html>\n<html>\n<head>\n' +
     '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">\n' +
     '<style>\n' +
@@ -60,7 +97,7 @@ function buildHtml(osmdJs: string): string {
     '<div id="notation"></div>\n' +
     '<script>\n' +
     'var osmd = null;\n' +
-    'function sendEvent(event) { window.ReactNativeWebView.postMessage(JSON.stringify(event)); }\n' +
+    'function sendEvent(event) { if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(JSON.stringify(event)); }\n' +
     '\n' +
     'function initOsmd() {\n' +
     '  try {\n' +
@@ -110,18 +147,73 @@ function buildHtml(osmdJs: string): string {
     '});\n' +
     '\n' +
     'initOsmd();\n' +
+    autoLoadScript +
     '<\/script>\n' +
     '</body>\n</html>';
 }
 
-export function NotationView({ mxlAsset }: NotationViewProps) {
+// ── Web: iframe-based renderer ──────────────────────────────────────
+
+function WebNotationView({ mxlAsset }: NotationViewProps) {
+  const [html, setHtml] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const [osmdJs, xml] = await Promise.all([
+          getOsmdJs(),
+          getMusicXml(mxlAsset),
+        ]);
+        if (cancelled) return;
+        setHtml(buildHtml(osmdJs, xml));
+      } catch (e) {
+        if (cancelled) return;
+        setError(e instanceof Error ? e.message : 'Failed to load assets');
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [mxlAsset]);
+
+  if (error) {
+    return (
+      <RNView style={styles.container}>
+        <Text style={styles.errorText}>Failed to load notation</Text>
+        <Text style={styles.errorDetail}>{error}</Text>
+      </RNView>
+    );
+  }
+
+  if (!html) {
+    return (
+      <RNView style={styles.container}>
+        <ActivityIndicator color={colors.primary} size="large" />
+        <Text style={styles.loadingText}>Loading notation engine...</Text>
+      </RNView>
+    );
+  }
+
+  return (
+    <RNView style={styles.webViewContainer}>
+      <iframe
+        srcDoc={html}
+        style={{ flex: 1, width: '100%', height: '100%', border: 'none', backgroundColor: colors.background } as any}
+        sandbox="allow-scripts"
+      />
+    </RNView>
+  );
+}
+
+// ── Native: WebView-based renderer ──────────────────────────────────
+
+function NativeNotationView({ mxlAsset }: NotationViewProps) {
   const [html, setHtml] = useState<string | null>(null);
   const [xmlData, setXmlData] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [webViewReady, setWebViewReady] = useState(false);
-  const webViewRef = React.useRef<WebView>(null);
+  const webViewRef = useRef<any>(null);
 
-  // Load OSMD JS and MusicXML
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -141,7 +233,6 @@ export function NotationView({ mxlAsset }: NotationViewProps) {
     return () => { cancelled = true; };
   }, [mxlAsset]);
 
-  // Send MusicXML to WebView once it's ready
   useEffect(() => {
     if (webViewReady && xmlData && webViewRef.current) {
       webViewRef.current.postMessage(
@@ -150,7 +241,7 @@ export function NotationView({ mxlAsset }: NotationViewProps) {
     }
   }, [webViewReady, xmlData]);
 
-  const handleMessage = (event: { nativeEvent: { data: string } }) => {
+  const handleMessage = useCallback((event: { nativeEvent: { data: string } }) => {
     try {
       const msg = JSON.parse(event.nativeEvent.data);
       if (msg.type === 'ready') {
@@ -161,7 +252,7 @@ export function NotationView({ mxlAsset }: NotationViewProps) {
     } catch {
       // Ignore non-JSON messages
     }
-  };
+  }, []);
 
   if (error) {
     return (
@@ -180,6 +271,9 @@ export function NotationView({ mxlAsset }: NotationViewProps) {
       </RNView>
     );
   }
+
+  // Lazy import WebView so it's not loaded on web
+  const WebView = require('react-native-webview').WebView;
 
   return (
     <RNView style={styles.webViewContainer}>
@@ -205,6 +299,15 @@ export function NotationView({ mxlAsset }: NotationViewProps) {
       />
     </RNView>
   );
+}
+
+// ── Export: pick renderer based on platform ──────────────────────────
+
+export function NotationView(props: NotationViewProps) {
+  if (Platform.OS === 'web') {
+    return <WebNotationView {...props} />;
+  }
+  return <NativeNotationView {...props} />;
 }
 
 const styles = StyleSheet.create({
