@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback } from 'react';
-import { StyleSheet, ScrollView, View as RNView, Pressable, TextInput } from 'react-native';
+import { Platform, StyleSheet, ScrollView, View as RNView, Pressable, TextInput } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from '@/components/Themed';
@@ -29,6 +29,48 @@ interface SessionDetailProps {
   onTapSegment?: (segmentId: string) => void;
   onUpdateSessionTimes?: (startedAt: string, endedAt: string | null) => void;
   onUpdateSegmentTimes?: (segmentId: string, startedAt: string, endedAt: string | null) => void;
+}
+
+function DateTimeInput({
+  value,
+  onChange,
+  label,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  label: string;
+}) {
+  if (Platform.OS === 'web') {
+    return (
+      <input
+        type="datetime-local"
+        value={value}
+        onChange={(e: any) => onChange(e.target.value)}
+        aria-label={label}
+        style={{
+          backgroundColor: colors.background,
+          color: colors.text,
+          border: `1px solid ${colors.border}`,
+          borderRadius: 8,
+          padding: '8px 12px',
+          fontSize: 14,
+          fontFamily: 'inherit',
+          width: '100%',
+          boxSizing: 'border-box' as const,
+        }}
+      />
+    );
+  }
+
+  return (
+    <TextInput
+      style={styles.timeInput}
+      value={value}
+      onChangeText={onChange}
+      placeholder="YYYY-MM-DDTHH:mm"
+      placeholderTextColor={colors.textMuted}
+    />
+  );
 }
 
 function EditableTime({
@@ -63,21 +105,9 @@ function EditableTime({
     return (
       <RNView style={styles.timeEditBlock}>
         <Text style={styles.timeEditLabel}>{label} Start</Text>
-        <TextInput
-          style={styles.timeInput}
-          value={draftStart}
-          onChangeText={setDraftStart}
-          placeholder="YYYY-MM-DDTHH:mm"
-          placeholderTextColor={colors.textMuted}
-        />
+        <DateTimeInput value={draftStart} onChange={setDraftStart} label={`${label} start`} />
         <Text style={styles.timeEditLabel}>{label} End</Text>
-        <TextInput
-          style={styles.timeInput}
-          value={draftEnd}
-          onChangeText={setDraftEnd}
-          placeholder="YYYY-MM-DDTHH:mm (blank if ongoing)"
-          placeholderTextColor={colors.textMuted}
-        />
+        <DateTimeInput value={draftEnd} onChange={setDraftEnd} label={`${label} end`} />
         <RNView style={styles.notesActions}>
           <Pressable style={styles.notesCancelButton} onPress={() => setEditing(false)}>
             <Text style={styles.notesCancelText}>Cancel</Text>
