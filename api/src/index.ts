@@ -3,6 +3,8 @@ import { cors } from 'hono/cors';
 import { serve } from '@hono/node-server';
 import auth from './routes/auth.js';
 import sync from './routes/sync.js';
+import teacher from './routes/teacher.js';
+import sheets from './routes/sheets.js';
 
 const app = new Hono();
 
@@ -14,7 +16,7 @@ app.use(
       'http://localhost:8081',
       'http://localhost:19006',
     ],
-    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
   }),
 );
@@ -22,6 +24,8 @@ app.use(
 app.get('/api/health', (c) => c.json({ ok: true }));
 app.route('/api/auth', auth);
 app.route('/api/sync', sync);
+app.route('/api/teacher', teacher);
+app.route('/api/sheets', sheets);
 
 const port = Number(process.env.PORT) || 3000;
 

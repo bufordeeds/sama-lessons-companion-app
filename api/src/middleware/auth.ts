@@ -26,6 +26,16 @@ export async function verifyJwt(token: string): Promise<AuthPayload> {
   return payload as unknown as AuthPayload;
 }
 
+export function requireRole(role: string) {
+  return createMiddleware<{ Variables: { user: AuthPayload } }>(async (c, next) => {
+    const user = c.get('user');
+    if (user.role !== role) {
+      return c.json({ error: 'Forbidden' }, 403);
+    }
+    await next();
+  });
+}
+
 export const authMiddleware = createMiddleware<{
   Variables: { user: AuthPayload };
 }>(async (c, next) => {

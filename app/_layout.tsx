@@ -76,6 +76,36 @@ function RootLayoutNav() {
             fullScreenGestureEnabled: true,
           }}
         />
+        <Stack.Screen
+          name="sheet-music/pdf/[id]"
+          options={{
+            title: 'Sheet Music',
+            headerBackTitle: 'Back',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            fullScreenGestureEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="student/[id]/index"
+          options={{
+            title: 'Student Progress',
+            headerBackTitle: 'Students',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            fullScreenGestureEnabled: true,
+          }}
+        />
+        <Stack.Screen
+          name="student/[id]/sessions"
+          options={{
+            title: 'Sessions',
+            headerBackTitle: 'Back',
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.text,
+            fullScreenGestureEnabled: true,
+          }}
+        />
       </Stack>
     </ThemeProvider>
   );
