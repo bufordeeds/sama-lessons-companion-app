@@ -8,7 +8,7 @@
     <creator type="composer">AV</creator>
     <encoding>
       <software>MuseScore Studio 4.6.5</software>
-      <encoding-date>2026-03-11</encoding-date>
+      <encoding-date>2026-03-23</encoding-date>
       <supports element="accidental" type="yes"/>
       <supports element="beam" type="yes"/>
       <supports element="print" attribute="new-page" type="yes" value="yes"/>
@@ -19,7 +19,7 @@
     <miscellaneous>
       <miscellaneous-field name="creationDate">2026-02-08</miscellaneous-field>
       <miscellaneous-field name="platform">Apple Macintosh</miscellaneous-field>
-      <miscellaneous-field name="sourceRevisionId">77871386</miscellaneous-field>
+      <miscellaneous-field name="sourceRevisionId">77871317</miscellaneous-field>
       <miscellaneous-field name="subtitle">#1</miscellaneous-field>
       </miscellaneous>
     </identification>
@@ -396,7 +396,7 @@
         <voice>1</voice>
         </note>
       </measure>
-    <measure number="7" width="214.29">
+    <measure number="7" width="223.02">
       <print new-system="yes">
         <system-layout>
           <system-margins>
@@ -412,13 +412,13 @@
         <voice>1</voice>
         <type>quarter</type>
         </note>
-      <note default-x="74.23" default-y="-20">
+      <note default-x="75.68" default-y="-20">
         <rest/>
         <duration>1</duration>
         <voice>1</voice>
         <type>eighth</type>
         </note>
-      <note default-x="101.88" default-y="-15">
+      <note default-x="104.79" default-y="-15">
         <unpitched>
           <display-step>C</display-step>
           <display-octave>5</display-octave>
@@ -429,13 +429,13 @@
         <type>eighth</type>
         <stem>up</stem>
         </note>
-      <note default-x="129.53" default-y="-20">
+      <note default-x="133.9" default-y="-20">
         <rest/>
         <duration>1</duration>
         <voice>1</voice>
         <type>eighth</type>
         </note>
-      <note default-x="157.18" default-y="-15">
+      <note default-x="163" default-y="-15">
         <unpitched>
           <display-step>C</display-step>
           <display-octave>5</display-octave>
@@ -446,7 +446,7 @@
         <type>eighth</type>
         <stem>up</stem>
         </note>
-      <note default-x="184.83" default-y="-20">
+      <note default-x="192.11" default-y="-20">
         <rest/>
         <duration>2</duration>
         <voice>1</voice>
@@ -460,14 +460,14 @@
         <voice>1</voice>
         </note>
       </measure>
-    <measure number="9" width="207.86">
+    <measure number="9" width="218.05">
       <note default-x="12.5" default-y="-20">
         <rest/>
         <duration>1</duration>
         <voice>1</voice>
         <type>eighth</type>
         </note>
-      <note default-x="40.15" default-y="-15">
+      <note default-x="41.61" default-y="-15">
         <unpitched>
           <display-step>C</display-step>
           <display-octave>5</display-octave>
@@ -478,13 +478,13 @@
         <type>eighth</type>
         <stem>up</stem>
         </note>
-      <note default-x="67.8" default-y="-20">
+      <note default-x="70.71" default-y="-20">
         <rest/>
         <duration>1</duration>
         <voice>1</voice>
         <type>eighth</type>
         </note>
-      <note default-x="95.46" default-y="-15">
+      <note default-x="99.82" default-y="-15">
         <unpitched>
           <display-step>C</display-step>
           <display-octave>5</display-octave>
@@ -495,13 +495,13 @@
         <type>eighth</type>
         <stem>up</stem>
         </note>
-      <note default-x="123.11" default-y="-20">
+      <note default-x="128.93" default-y="-20">
         <rest/>
         <duration>1</duration>
         <voice>1</voice>
         <type>eighth</type>
         </note>
-      <note default-x="150.76" default-y="-15">
+      <note default-x="158.04" default-y="-15">
         <unpitched>
           <display-step>C</display-step>
           <display-octave>5</display-octave>
@@ -512,7 +512,7 @@
         <type>eighth</type>
         <stem>up</stem>
         </note>
-      <note default-x="178.41" default-y="-20">
+      <note default-x="187.14" default-y="-20">
         <rest/>
         <duration>2</duration>
         <voice>1</voice>
@@ -526,14 +526,14 @@
         <voice>1</voice>
         </note>
       </measure>
-    <measure number="11" width="241.42">
+    <measure number="11" width="222.5">
       <note default-x="12.5" default-y="-20">
         <rest/>
         <duration>1</duration>
         <voice>1</voice>
         <type>eighth</type>
         </note>
-      <note default-x="40.15" default-y="-15">
+      <note default-x="41.61" default-y="-15">
         <unpitched>
           <display-step>C</display-step>
           <display-octave>5</display-octave>
@@ -544,13 +544,13 @@
         <type>eighth</type>
         <stem>up</stem>
         </note>
-      <note default-x="67.8" default-y="-20">
+      <note default-x="70.71" default-y="-20">
         <rest/>
         <duration>1</duration>
         <voice>1</voice>
         <type>eighth</type>
         </note>
-      <note default-x="95.46" default-y="-15">
+      <note default-x="99.82" default-y="-15">
         <unpitched>
           <display-step>C</display-step>
           <display-octave>5</display-octave>
@@ -561,30 +561,19 @@
         <type>eighth</type>
         <stem>up</stem>
         </note>
-      <note default-x="123.11" default-y="-20">
+      <note default-x="128.93" default-y="-20">
         <rest/>
         <duration>1</duration>
         <voice>1</voice>
         <type>eighth</type>
         </note>
-      <note default-x="150.76" default-y="-15">
-        <unpitched>
-          <display-step>C</display-step>
-          <display-octave>5</display-octave>
-          </unpitched>
-        <duration>1</duration>
-        <instrument id="P1-I39"/>
-        <voice>1</voice>
-        <type>eighth</type>
-        <stem>up</stem>
-        </note>
-      <note default-x="178.41" default-y="-20">
+      <note default-x="158.04" default-y="-20">
         <rest/>
-        <duration>1</duration>
+        <duration>2</duration>
         <voice>1</voice>
-        <type>eighth</type>
+        <type>quarter</type>
         </note>
-      <note default-x="206.06" default-y="-15">
+      <note default-x="187.14" default-y="-15">
         <unpitched>
           <display-step>C</display-step>
           <display-octave>5</display-octave>
